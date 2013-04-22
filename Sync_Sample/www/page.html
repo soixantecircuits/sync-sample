@@ -34,18 +34,12 @@
 <script type="text/javascript" src="js/index.js"></script>
 <script src="http://192.168.1.89:8081/target/target-script-min.js"></script>
 
-    <div class="progressFile"><h1>Updating content...</h1></div>
-    <div class="progressbar progressbar-green">
-        <div class="progressbar-inner"></div>
-    </div>
 
-
-<div id="some_div_id"></div>
-
-
-<script type="text/javascript">
-    app.initialize();
+<h2>Offline Content Page</h2>
+<script>
+    document.addEventListener('deviceready', app.showContent, false);
 </script>
+
 
 </body>
 </html>

@@ -17,105 +17,97 @@
  * under the License.
  */
 var app = {
-        path: '',
-        filter: /^\/(.*)\//,
-        eventFolder: "",
-        // Application Constructor
-        initialize: function () {
-            this.bindEvents();
-        },
-        // Bind Event Listeners
-        //
-        // Bind any events that are required on startup. Common events are:
-        // 'load', 'deviceready', 'offline', and 'online'.
-        bindEvents: function () {
-            document.addEventListener('deviceready', this.onDeviceReady, false);
-        },
-        // deviceready Event Handler
-        //
-        // The scope of 'this' is the event. In order to call the 'receivedEvent'
-        // function, we must explicity call 'app.receivedEvent(...);'
+    path: '',
+    filter: /^\/(.*)\//,
+    eventFolder: "",
+    // Application Constructor
+    initialize: function () {
+        this.bindEvents();
+    },
+    // Bind Event Listeners
+    //
+    // Bind any events that are required on startup. Common events are:
+    // 'load', 'deviceready', 'offline', and 'online'.
+    bindEvents: function () {
+        document.addEventListener('deviceready', this.onDeviceReady, false);
+    },
+    // deviceready Event Handler
+    //
+    // The scope of 'this' is the event. In order to call the 'receivedEvent'
+    // function, we must explicity call 'app.receivedEvent(...);'
 
-        onDeviceReady: function () {
-            var pathName = window.location.pathname.split("/");
-            pathName.splice(-3, 3);
-            var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
-            //                window.resolveLocalFileSystemURI(documantFolder+"/"+"MasterPage", function(){
+    onDeviceReady: function () {
+        var pathName = window.location.pathname.split("/"),
+            json = "https://www.dropbox.com/s/kadx8a6zyhvinb9/links.json?dl=1",
+            json2 = "https://www.dropbox.com/s/wot3zeg9ljnxsb5/links1.json?dl=1";
 
-            //http://wangshiyue.com:5000/fbsharing/2QHGQ9eI     JSON
-            //http://wangshiyue.com:5000/fbsharing/FJ8vSdqc     JSON1
-            app.downloadMaster("https://base_url.com", "http://wangshiyue.com:5000/fbsharing/2QHGQ9eI", "MasterPage", function () {
-                //window.location.replace(documantFolder+"/"+"MasterPage"+"/index.html");
-                document.getElementById('picture').innerHTML = "<img src=\"" + documantFolder + "/MasterPage/Hello-World.png" + "\" />";
-                document.getElementById('picture').style.display = "block";
-                document.getElementById('movie').innerHTML = "<video width=\"320\" height=\"240\" controls><source src=\"" + documantFolder + "/MasterPage/small.mp4" + "\" type=\"video/mp4\"></video>";
-                document.getElementById('movie').style.display = "block";
-            });
+        pathName.splice(-3, 3);
+        var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
 
-            //                                                 });
-        },
-
-        readAsTextMaster: function (file, baseUrl, eventName, SuccessCallback, failCallback) {
-            var reader = new FileReader();
-            reader.onloadend = function (evt) {
-                var long = evt.target.result;
-                var jsondata = JSON.parse(long);
-                console.log(jsondata);
-                /*
-                 alert(jsondata.CACHE.length);
-                 alert(jsondata.CACHE[0]);
-                 alert(jsondata.CACHE[1]);*/
-                var numSuccess = 0;
-                var numFail = 0;
-                for (var cpt = 0; cpt < jsondata.CACHE.length; cpt++) {
-                    var elt = jsondata.CACHE[cpt];
-                    if (elt != "") {
-                        var fileTransfer = new FileTransfer();
-                        var url = /*baseUrl + */elt;
-                        console.log(url);
-                        var pathBis = app.path + eventName + "/" + elt.split('/').pop();
-                        fileTransfer.download(
-                            url, pathBis, function (entry) {
-                                numSuccess++;
-                                if (numSuccess === jsondata.CACHE.length) {
-                                    SuccessCallback && SuccessCallback();
-                                }
-                            }, function (error) {
-                                failCallback && failCallback();
-                                //console.log("download error target "+elt);
-                                //console.log("upload error code" + error.code);
-                            });
-                    }
+        app.updateFileList(json, "MasterPage",
+            {
+                success: function () {
+                    document.getElementById('picture').innerHTML = "<img src=\"" + documantFolder + "/MasterPage/Hello-World.png" + "\" />";
+                    document.getElementById('picture').style.display = "block";
+                    document.getElementById('movie').innerHTML = "<video width=\"320\" height=\"240\" controls><source src=\"" + documantFolder + "/MasterPage/small.mp4" + "\" type=\"video/mp4\"></video>";
+                    document.getElementById('movie').style.display = "block";
                 }
-                //callback && callback(true);
-            };
-            reader.readAsText(file);
-        },
+            });
+    },
 
-        fail: function (evt) {
-            console.log(evt.target.error.code);
-        },
+    readAsTextMaster: function (file, folderName, option) {
+        var reader = new FileReader();
+        reader.onloadend = function (evt) {
+            var long = evt.target.result,
+                jsondata = JSON.parse(long),
+                numSuccess = 0,
+                numFail = 0,
+                pathBis = "",
+                url = "",
+                elt = "",
+                fileTransfer = new FileTransfer();
+            for (var cpt = 0; cpt < jsondata.CACHE.length; cpt++) {
+                elt = jsondata.CACHE[cpt];
+                if (elt != "") {
+                    url = option.baseUrl ? baseUrl + elt : elt;
+                    pathBis = app.path + folderName + "/" + elt.split('/').pop();
+                    fileTransfer.download(
+                        url, pathBis, function (entry) {
+                            numSuccess++;
+                            if (numSuccess === jsondata.CACHE.length) {
+                                option.success && option.success();
+                            }
+                        }, function (error) {
+                            console.log("Download error, target: " + elt);
+                        });
+                }
+            }
+        };
+        reader.readAsText(file);
+    },
 
-        downloadMaster: function (baseUrl, manifestUrl, eventName, callback) {
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
-                fileSystem.root.getFile("manifest", {create: true}, function (fileEntry) {
-                    app.path = app.filter.exec(fileEntry.fullPath)[0];
-                    fileEntry.file(function (file) {
-                        var fileTransfer = new FileTransfer();
-                        var manifestPath = app.path + "manifest";
-                        fileTransfer.download(
-                            manifestUrl, manifestPath,
-                            function (entry) {
-                                app.readAsTextMaster(file, baseUrl, eventName, function () {
-                                    callback && callback();
-                                }, function () {
-                                    alert("download failed");
-                                });
-                            }, function (error) {
-                                console.log("download error source " + error.source);
+    fail: function (evt) {
+        console.log(evt.target.error.code);
+    },
+
+    updateFileList: function (fileListUrl, folderName, option) {
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+            fileSystem.root.getFile("manifest", {create: true}, function (fileEntry) {
+                app.path = app.filter.exec(fileEntry.fullPath)[0];
+                fileEntry.file(function (file) {
+                    var fileTransfer = new FileTransfer();
+                    var manifestPath = app.path + "manifest";
+                    fileTransfer.download(
+                        fileListUrl, manifestPath,
+                        function (entry) {
+                            app.readAsTextMaster(file, folderName, {
+                                success: option.success
                             });
-                    }, app.fail);
+                        }, function (error) {
+                            console.log("Download file list error: " + error.source);
+                        });
                 }, app.fail);
             }, app.fail);
-        }
-    };
+        }, app.fail);
+    }
+};

@@ -21,90 +21,127 @@ var app = {
     filter: /^\/(.*)\//,
     eventFolder: "",
     db: undefined,
+    count_success: 0,
+    total_file: 0,
+    funcs:[],
     // Application Constructor
     initialize: function () {
         this.bindEvents();
-
-
     },
-    // Bind Event Listeners
-    //
-    // Bind any events that are required on startup. Common events are:
-    // 'load', 'deviceready', 'offline', and 'online'.
     bindEvents: function () {
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
-    // deviceready Event Handler
-    //
-    // The scope of 'this' is the event. In order to call the 'receivedEvent'
-    // function, we must explicity call 'app.receivedEvent(...);'
-
     onDeviceReady: function () {
+
+        console.log("Document is ready");
         app.db = window.openDatabase("test", "1.0", "Test DB", 1000000);
         app.db.transaction(function (tx) {
             tx.executeSql('CREATE TABLE IF NOT EXISTS URLS (id unique, url, file)');
         });
         var pathName = window.location.pathname.split("/"),
             json = "https://www.dropbox.com/s/kadx8a6zyhvinb9/links.json?dl=1",
-            json2 = "https://www.dropbox.com/s/wot3zeg9ljnxsb5/links1.json?dl=1";
+            json2 = "https://www.dropbox.com/s/wot3zeg9ljnxsb5/links1.json?dl=1",
+            kiloImages = "https://www.dropbox.com/s/6x6juh4v1jnv4qo/link1.json?dl=1",
+            content_json = "http://content.loc/json";
 
         pathName.splice(-3, 3);
         var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
-        window.resolveLocalFileSystemURI(documantFolder + "/" + "MasterPage", function () {
-            var path = window.location.pathname.split("/");
-            path.pop();
-            window.location.replace(path.join("/") + "/page.html");
-        }, function () {
-            app.updateFileList(json, "MasterPage");
-        });
+//        window.resolveLocalFileSystemURI(documantFolder + "/" + "ancestor-page", function () {
+//            var path = window.location.pathname.split("/");
+//            path.pop();
+//            window.location.replace(path.join("/") + "/page.html");
+//        }, function () {
+                app.updateFileList(content_json, "ancestor-page");
+//        });
     },
 
     readFileList: function (file, folderName, option) {
+        console.log("in read list");
         var reader = new FileReader();
         reader.onloadend = function (evt) {
-            var long = evt.target.result,
-                jsondata = JSON.parse(long),
-                numSuccess = 0,
-                numFail = 0,
-                pathBis = "",
-                url = "",
-                elt = "",
-                fileTransfer = undefined;
 
-            $('.progressFile').empty().append("<h1>Still " + jsondata.CACHE.length + " files to go!</h1>");
-            for (var cpt = 0; cpt < jsondata.CACHE.length; cpt++) {
-                elt = jsondata.CACHE[cpt];
-
-                if (elt.url != "") {
-
-                    url = option.baseUrl ? baseUrl + elt.url : elt.url;
-                    pathBis = app.path + folderName + "/" + elt.url.split('/').pop()
-                    fileTransfer = new FileTransfer();
-                    fileTransfer.onprogress = function (progressEvent) {
-                        if (progressEvent.lengthComputable) {
-                            var percent = (progressEvent.loaded / progressEvent.total) * 600;
-                            $(".progressbar-inner").width(percent);
-                            //$(".progressbar-inner").width(percent);
-                        }
-                    };
-                    fileTransfer.download(
-                        url, pathBis, function (entry) {
-                            numSuccess++;
-                            $('.progressFile').empty().append("<h1>Still " + (jsondata.CACHE.length - numSuccess) + " files to go</h1>");
-                            if (entry.name.indexOf("mp4") != -1) {
-                                $('body').append("<video width=\"320\" height=\"240\" controls><source src=\"" + entry.fullPath + "\" type=\"video/mp4\"></video>");
-                            }
-                            else if (entry.name.indexOf("png") != -1) {
-                                $('body').append("<img src=\"" + entry.fullPath + "\" />");
-                            }
-
-                        }, function (error) {
-                            console.log("Download error, target: " + elt.url);
-                        });
-                }
+            var jsondata = JSON.parse(evt.target.result);
+            app.total_file=jsondata.CACHE.length;
+            var sampleData = [];
+            for (var i = 0, len = jsondata.CACHE.length; i < len; i++) {
+                var result = jsondata.CACHE[i];
+                //sampleData.push({ url: result.url, name: result.name});
+                console.log(result);
+//                app.funcs.push(function(next){
+                    app.downloadPage(result);
+//                    next();
+//                });
             }
+//            $('.progressFile').empty().append("<h1>Still " + jsondata.CACHE.length + " files to go!</h1>");
+            $('.progressFile').empty().append("<h1>Still " + jsondata.TotalSize + " bytes to go!</h1>");
+
+//            app.taskBuffer(app.funcs, function(){
+//                console.log("downloaded all");
+//            })
+//            for (var cpt = 0; cpt < jsondata.CACHE.length; cpt++) {
+                //elt = sampleData.pop();
+                //app.downloadItem(sampleData, folderName);
+//            }
         };
         reader.readAsText(file);
+    },
+    downloadPage: function(page){
+        var data = [];
+        for (var i = 0, len = page.data.length; i < len; i++) {
+            data.push({
+                url: page.data[i].url,
+                name: page.folder
+            })
+        }
+        app.downloadItem(data, page.folder);
+    },
+    downloadItem: function(data, folderName){
+        console.log(folderName);
+        var numSuccess = 0,
+            numFail = 0,
+            pathBis = "",
+            url = "",
+            fileTransfer = undefined;
+        if (data.length>0) {
+            var elt = data.pop();
+            console.log("begin read");
+//                    url = option.baseUrl ? baseUrl + elt.url : elt.url;
+            url = elt.url;
+            pathBis = app.path + folderName + "/" + elt.url.split('/').pop();
+            fileTransfer = new FileTransfer();
+            fileTransfer.onprogress = function (progressEvent) {
+                if (progressEvent.lengthComputable) {
+                    var percent = (progressEvent.loaded / progressEvent.total) * 600;
+                    $(".progressbar-inner").width(percent);
+                }
+            };
+            fileTransfer.download(
+                url, pathBis, function (entry) {
+                    app.count_success++;
+                    numSuccess++;
+                    var image_formats="";
+                    image_formats.replace(/ (png|jpg|jpeg)$/gi, "");
+//                    $('.progressFile').empty().append("<h1>Still " + (jsondata.CACHE.length - numSuccess) + " files to go</h1>");
+
+                    $('.progressFile').empty().append("<h1>Still " + array.length + " files to go</h1>");
+                    if (entry.name.indexOf("mp4") != -1) {
+                        $('body').append("<video width=\"320\" height=\"240\" controls><source src=\"" + entry.fullPath + "\" type=\"video/mp4\"></video>");
+                    }
+                    else if (entry.name.indexOf(image_formats) != -1) {
+                        $('body').append("<img width=\"200px\" height=\"200px\" src=\"" + entry.fullPath + "\" />");
+                    }
+                    $(".progressbar-inner").width(0);
+                    app.downloadItem(array, folderName);
+
+                }, function (error) {
+                    console.log("Download error, target: " + elt.url);
+                    app.downloadItem(array, folderName);
+                });
+        }
+        else{
+            console.log("else");
+           // alert(app.count_success+" of " + app.total_file + " files Downloaded");
+        }
     },
 
     fail: function (evt) {
@@ -121,9 +158,8 @@ var app = {
                     fileTransfer.download(
                         fileListUrl, fileListPath,
                         function (entry) {
-                            app.readFileList(file, folderName, {
-                                success: option.success
-                            });
+                                app.readFileList(file, folderName);
+
                         }, function (error) {
                             console.log("Download file list error: " + error.source);
                         });
@@ -151,7 +187,6 @@ var app = {
                     else if (entries[i].name.indexOf("png") != -1) {
                         $('body').append("<img src=\"" + entries[i].fullPath + "\" />");
                     }
-
                 }
             }, function (error) {
                 alert(error.code);

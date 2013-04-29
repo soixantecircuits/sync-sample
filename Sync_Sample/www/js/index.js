@@ -23,7 +23,6 @@ var app = {
     db: undefined,
     count_success: 0,
     total_file: 0,
-    funcs: [],
     // Application Constructor
     initialize: function () {
         this.bindEvents();
@@ -32,16 +31,8 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     onDeviceReady: function () {
-
         console.log("Document is ready");
-        app.db = window.openDatabase("test", "1.0", "Test DB", 1000000);
-        app.db.transaction(function (tx) {
-            tx.executeSql('CREATE TABLE IF NOT EXISTS URLS (id unique, url, file)');
-        });
         var pathName = window.location.pathname.split("/"),
-            json = "https://www.dropbox.com/s/kadx8a6zyhvinb9/links.json?dl=1",
-            json2 = "https://www.dropbox.com/s/wot3zeg9ljnxsb5/links1.json?dl=1",
-            kiloImages = "https://www.dropbox.com/s/6x6juh4v1jnv4qo/link1.json?dl=1",
             content_json = "http://content.loc/json";
 
         pathName.splice(-3, 3);
@@ -56,7 +47,6 @@ var app = {
     },
 
     readFileList: function (file, folderName, option) {
-        console.log("in read list");
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             var jsondata = JSON.parse(evt.target.result);
@@ -77,13 +67,10 @@ var app = {
                 name: page.folder
             })
         }
-        var jsondata=JSON.stringify(page);
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function(fileSystem){
-            fileSystem.root.getFile(page.folder+"content.json", {create: true}, function(fileEntry){
-                fileEntry.createWriter(function(writer){
-                   /* writer.onwriteend = function(evt) {
-                        console.log("contents of file now 'some sample text'");
-                    };*/
+        var jsondata = JSON.stringify(page);
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+            fileSystem.root.getFile(page.folder + "content.json", {create: true}, function (fileEntry) {
+                fileEntry.createWriter(function (writer) {
                     writer.write(jsondata);
                 }, app.fail);
             }, app.fail);
@@ -91,16 +78,12 @@ var app = {
         app.downloadItem(data, page.folder);
     },
     downloadItem: function (data, folderName) {
-        console.log(folderName);
         var numSuccess = 0,
-            numFail = 0,
             pathBis = "",
             url = "",
             fileTransfer = undefined;
         if (data.length > 0) {
             var elt = data.pop();
-            console.log("begin read");
-//                    url = option.baseUrl ? baseUrl + elt.url : elt.url;
             url = elt.url;
             pathBis = app.path + folderName + "/" + elt.url.split('/').pop();
             fileTransfer = new FileTransfer();
@@ -133,10 +116,6 @@ var app = {
                     app.downloadItem(data, folderName);
                 });
         }
-        else {
-            console.log("else");
-            // alert(app.count_success+" of " + app.total_file + " files Downloaded");
-        }
     },
 
     fail: function (evt) {
@@ -161,33 +140,5 @@ var app = {
                 }, app.fail);
             }, app.fail);
         }, app.fail);
-    },
-    populateDB: function (tx) {
-        tx.executeSql('CREATE TABLE IF NOT EXISTS URLS (id unique, url, file)');
-        tx.executeSql('INSERT INTO URLS (id, data) VALUES (1, "First row")');
-        tx.executeSql('INSERT INTO URLS (id, data) VALUES (2, "Second row")');
-    },
-    showContent: function () {
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
-            console.log("Root = " + fs.root.fullPath);
-            var directoryEntry = new DirectoryEntry("MasterPage", fs.root.fullPath + "/MasterPage");
-            var directoryReader = directoryEntry.createReader();
-            directoryReader.readEntries(function (entries) {
-                var i;
-                for (i = 0; i < entries.length; i++) {
-                    console.log(entries[i].name);
-                    if (entries[i].name.indexOf("mp4") != -1) {
-                        $('body').append("<video width=\"320\" height=\"240\" controls><source src=\"" + entries[i].fullPath + "\" type=\"video/mp4\"></video>");
-                    }
-                    else if (entries[i].name.indexOf("png") != -1) {
-                        $('body').append("<img src=\"" + entries[i].fullPath + "\" />");
-                    }
-                }
-            }, function (error) {
-                alert(error.code);
-            })
-        }, function (error) {
-            alert(error.code);
-        });
     }
 };

@@ -32,13 +32,30 @@
 <script type="text/javascript" src="js/Tools.js"></script>
 <script type="text/javascript" src="js/zepto.js"></script>
 <script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="js/page.js"></script>
+<script type="text/javascript" src="js/handlebars.js"></script>
 <script src="http://192.168.1.89:8081/target/target-script-min.js"></script>
 
 
 <h2>Offline Content Page</h2>
 <script>
-    document.addEventListener('deviceready', app.showContent, false);
+    page.initialize();
+//    document.addEventListener('deviceready', app.showContent, false);
 </script>
+<script id="entry-template" type="text/x-handlebars-template">
+    <div class="entry">
+        <h1>{{title}}</h1>
+        <div class="body">
+            {{body}}
+        </div>
+    </div>
+
+</script>
+<button class="home">HOME</button>
+<div class="content"></div>
+<div class="buttons"></div>
+<div class="images"></div>
+<div class="videos"></div>
 
 
 </body>

@@ -37,13 +37,13 @@ var app = {
 
         pathName.splice(-3, 3);
         var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
-//        window.resolveLocalFileSystemURI(documantFolder + "/" + "ancestor-page", function () {
-//            var path = window.location.pathname.split("/");
-//            path.pop();
-//            window.location.replace(path.join("/") + "/page.html");
-//        }, function () {
+        window.resolveLocalFileSystemURI(documantFolder + "/" + "ancestor-page", function () {
+            var path = window.location.pathname.split("/");
+            path.pop();
+            window.location.replace(path.join("/") + "/page.html");
+        }, function () {
         app.updateFileList(content_json, "ancestor-page");
-//        });
+        });
     },
 
     readFileList: function (file, folderName, option) {

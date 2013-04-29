@@ -63,13 +63,21 @@ var page = {
             window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
                 var file_path = "ancestor-page/" + $(self).data("name") + "/content.json";
                 console.log(file_path);
-                fileSystem.root.getFile(file_path, {create: true}, function (fileEntry) {
+                fileSystem.root.getFile(file_path, {}, function (fileEntry) {
                     fileEntry.file(function (file) {
                         var reader = new FileReader();
                         reader.readAsText(file);
                         reader.onloadend = function (evt) {
                             var jsondata = JSON.parse(evt.target.result);
                             console.log(jsondata);
+                            var t = jsondata.folder.split("/");
+                            t.splice(-2, 2);
+                            $('body').append("<button class=\"backButton\">BACK</button>");
+                            $('.backButton').on('click', function(){
+                                page.cleanPage();
+                                page.readFolder(t.join("/"))
+                                $(this).remove();
+                            });
                         }
                     }, page.fail);
                 }, page.fail);
@@ -82,14 +90,13 @@ var page = {
             console.log($(self).data("name"));
             page.cleanPage();
             page.readFolder("ancestor-page/" + $(self).data("name"));
-
         });
-
     },
     fail: function (evt) {
         console.log(evt.target.error.code);
     },
     cleanPage: function () {
         $(".buttons, .videos, .images").empty();
+        $(".backButton").remove();
     }
 };

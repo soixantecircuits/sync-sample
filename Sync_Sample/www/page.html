@@ -32,33 +32,27 @@
     <script src="http://192.168.1.89:8081/target/target-script-min.js"></script>
 </head>
 <body>
-<h2>Offline Content Page</h2>
+<h1>Offline Content Page</h1>
 <script>
     page.initialize();
 </script>
-<script id="entry-template" type="text/x-handlebars-template">
-    <div class="entry">
-        <h1>{{title}}</h1>
-        <div class="body">
-            {{body}}
-        </div>
-    </div>
-
-</script>
 <button class="home">HOME</button>
-<div class="content"></div>
 <div class="buttons"></div>
-<div class="images"></div>
-<div class="videos"></div>
-
 <script id="media-template" type="text/x-handlebars-template">
-    {{#each this}}
-    {{#if this.isImage}}
-    <h1>{{name}}</h1>
-    <img class="img" width="200px" height="200px" src="{{}}"/>;
-    {{/if}}
-    {{/each}}
-</script> 
-
+    <div class="medias">
+        {{#each this}}
+        {{#if isImage}}
+        <img class="img" width="200px" height="200px" src="{{path}}"/>
+        <p>{{name}}</p>
+        {{else}}
+        {{#if isVideo}}
+        <video class="video" width="200px" height="200px" controls>
+            <source src="{{path}}">
+        </video>
+        {{/if}}
+        {{/if}}
+        {{/each}}
+    </div>
+</script>
 </body>
 </html>

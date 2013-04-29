@@ -10,18 +10,12 @@ var page = {
     // Application Constructor
     initialize: function () {
         this.bindEvents();
-
     },
     bindEvents: function () {
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     onDeviceReady: function () {
-        console.log("this is a page");
         page.readFolder("ancestor-page");
-        var source = $("#entry-template").html();
-        var template = Handlebars.compile(source);
-        var context = {title: "My New Post", body: "This is my first post!"};
-        $(".content").append(template(context));
         $(".home").on('click', function () {
             page.cleanPage();
             page.readFolder("ancestor-page");
@@ -30,6 +24,34 @@ var page = {
     readFolder: function (folderName) {
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
             var folderAbsolutePath = fs.root.fullPath + "/" + folderName;
+            var jsonFilePath=folderAbsolutePath+"/content.json";
+            fs.root.getFile(jsonFilePath, {}, function (fileEntry) {
+                fileEntry.file(function (file) {
+                    var reader = new FileReader();
+                    reader.readAsText(file);
+                    reader.onloadend = function (evt) {
+                        var jsondata = JSON.parse(evt.target.result);
+                        var obj = {data:[]};
+                        for (var i = 0, len = jsondata.data.length; i < len; i++) {
+                            var media=jsondata.data[i],
+                                isImage=(media.type=="image")? true: false,
+                                isVideo=(media.type=="video")? true: false;
+                            obj.data.push({
+                                name: media.name,
+                                path: folderAbsolutePath+"/"+media.name,
+                                isImage: isImage,
+                                isVideo: isVideo
+                            })
+                        }
+                        var source = $("#media-template").html();
+                        var template = Handlebars.compile(source);
+                        var context = obj.data;
+                        $(".media").remove();
+                        $("body").append(template(context))
+                        page.addBackButton(jsondata.folder);
+                    }
+                }, page.fail);
+            }, page.fail);
             var directoryEntry = new DirectoryEntry(folderName, folderAbsolutePath);
             var directoryReader = directoryEntry.createReader();
             directoryReader.readEntries(function (entries) {
@@ -37,16 +59,8 @@ var page = {
                 for (i = 0; i < entries.length; i++) {
                     var entry = entries[i];
                     if (entry.isDirectory) {
-                        var button = "<button class=\"btn\" data-name=\"" + entry.name + "\">" + entry.name + "</button>";
+                        var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
                         $('.buttons').append(button);
-                    }
-                    else if (entry.name.indexOf("jpg") != -1) {
-                        var image = "<img class=\"img\" width=\"200px\" height=\"200px\" src=\"" + folderAbsolutePath + "/" + entry.name + "\" data-name=\"" + entry.name + "\"></img>";
-                        $('.images').append(image);
-                    }
-                    else if (entry.name.indexOf("mp4") != -1) {
-                        var video = "<video class=\"video\" width=\"200px\" height=\"200px\" controls><source src=\"" + folderAbsolutePath + "/" + entry.name + "\" data-name=\"" + entry.name + "\"></video>";
-                        $('.videos').append(video);
                     }
                     else if (entry.name != ".DS_Store") {
                         console.log(entry.name);
@@ -54,49 +68,31 @@ var page = {
                     }
                 }
                 page.handleClick();
-            }, page.fail)
+            }, page.fail);
         }, page.fail)
     },
     handleClick: function () {
         $('.btn').on('click', function () {
-            var self = this;
-            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
-                var file_path = "ancestor-page/" + $(self).data("name") + "/content.json";
-                console.log(file_path);
-                fileSystem.root.getFile(file_path, {}, function (fileEntry) {
-                    fileEntry.file(function (file) {
-                        var reader = new FileReader();
-                        reader.readAsText(file);
-                        reader.onloadend = function (evt) {
-                            var jsondata = JSON.parse(evt.target.result);
-                            console.log(jsondata);
-                            var t = jsondata.folder.split("/");
-                            t.splice(-2, 2);
-                            $('body').append("<button class=\"backButton\">BACK</button>");
-                            $('.backButton').on('click', function(){
-                                page.cleanPage();
-                                page.readFolder(t.join("/"))
-                                $(this).remove();
-                            });
-                        }
-                    }, page.fail);
-                }, page.fail);
-            }, page.fail);
-
-            var source = $("#entry-template").html();
-            var template = Handlebars.compile(source);
-            var context = {title: "hello", body: "bonjour"};
-            $(".content").empty().append(template(context));
-            console.log($(self).data("name"));
             page.cleanPage();
-            page.readFolder("ancestor-page/" + $(self).data("name"));
+            page.readFolder( $(this).data("path"));
         });
     },
     fail: function (evt) {
         console.log(evt.target.error.code);
     },
     cleanPage: function () {
-        $(".buttons, .videos, .images").empty();
+        $(".medias").empty();
+        $(".buttons").empty();
         $(".backButton").remove();
+    },
+    addBackButton: function (currentPath){
+        var path = currentPath.split("/");
+        path.splice(-2, 2);
+        $('body').append("<button class=\"backButton\">BACK</button>");
+        $('.backButton').on('click', function(){
+            page.cleanPage();
+            page.readFolder(path.join("/"))
+            $(this).remove();
+        });
     }
 };

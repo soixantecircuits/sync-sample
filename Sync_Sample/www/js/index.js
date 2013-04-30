@@ -55,7 +55,7 @@ var app = {
         });
     },
 
-    readFileList: function (file) {
+    readFileList: function (file) {//Read the global json file and extract informations
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             app.jsonData = JSON.parse(evt.target.result);
@@ -76,7 +76,7 @@ var app = {
         reader.readAsText(file);
     },
     downloadItem: function (data) {
-        var pathBis = "",
+        var filePath = "",
             url = "",
             page = undefined,
             folder = "",
@@ -86,7 +86,7 @@ var app = {
             var elt = data.pop();
             url = elt.url;
             var folderName = elt.folderName;
-            pathBis = app.path + folderName + "/" + elt.url.split('/').pop();
+            filePath = app.path + folderName + "/" + elt.url.split('/').pop();
             fileTransfer = new FileTransfer();
             fileTransfer.onprogress = function (progressEvent) {
                 if (progressEvent.lengthComputable) {
@@ -95,7 +95,7 @@ var app = {
                 }
             };
             fileTransfer.download(
-                url, pathBis, function (entry) {
+                url, filePath, function (entry) {
                     app.count_success++;
                     entry.file(function(file){
                         app.total_size-=file.size;
@@ -108,7 +108,8 @@ var app = {
                     app.downloadItem(data);
                 });
         }
-        else {
+        else {//Download finished
+            //Add content.json to each folder
             var writeContentJson = function (jsonStringData, folder) {
                 window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
                     fileSystem.root.getFile(folder + "content.json", {create: true}, function (fileEntry) {
@@ -138,7 +139,7 @@ var app = {
         console.log(evt.target.error.code);
     },
 
-    updateFileList: function (fileListUrl, folderName, option) {
+    updateFileList: function (fileListUrl, folderName) {//update the global json file
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
             fileSystem.root.getFile("fileList", {create: true}, function (fileEntry) {
                 app.path = app.filter.exec(fileEntry.fullPath)[0];

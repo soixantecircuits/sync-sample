@@ -31,12 +31,12 @@ var page = {
                     reader.readAsText(file);
                     reader.onloadend = function (evt) {
                         var jsondata = JSON.parse(evt.target.result);
-                        var obj = {data:[]};
+                        var pageContent = {data:[]};//Will add title, description, etc
                         for (var i = 0, len = jsondata.data.length; i < len; i++) {
                             var media=jsondata.data[i],
                                 isImage=(media.type=="image")? true: false,
                                 isVideo=(media.type=="video")? true: false;
-                            obj.data.push({
+                            pageContent.data.push({
                                 name: media.name,
                                 path: folderAbsolutePath+"/"+media.name,
                                 isImage: isImage,
@@ -45,7 +45,7 @@ var page = {
                         }
                         var source = $("#media-template").html();
                         var template = Handlebars.compile(source);
-                        var context = obj.data;
+                        var context = pageContent.data;
                         $(".media").remove();
                         $("body").append(template(context))
                         page.addBackButton(jsondata.folder);

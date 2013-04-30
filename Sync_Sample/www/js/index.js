@@ -33,7 +33,8 @@ var app = {
     onDeviceReady: function () {
         console.log("Document is ready");
         var pathName = window.location.pathname.split("/"),
-            content_json = "http://content.loc/json";
+            content_json = "http://contentcontent.eu01.aws.af.cm/json",
+            content_json_local = "http://content.loc/json";
 
         pathName.splice(-3, 3);
         var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
@@ -42,7 +43,7 @@ var app = {
             path.pop();
             window.location.replace(path.join("/") + "/page.html");
         }, function () {
-        app.updateFileList(content_json, "ancestor-page");
+            app.updateFileList(content_json_local, "ancestor-page");
         });
     },
 
@@ -67,11 +68,11 @@ var app = {
                 name: page.folder
             })
         }
-        var jsondata = JSON.stringify(page);
+        var jsonStringData = JSON.stringify(page);
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
             fileSystem.root.getFile(page.folder + "content.json", {create: true}, function (fileEntry) {
                 fileEntry.createWriter(function (writer) {
-                    writer.write(jsondata);
+                    writer.write(jsonStringData);
                 }, app.fail);
             }, app.fail);
         }, app.fail);
@@ -100,7 +101,6 @@ var app = {
                     var image_formats = "";
                     image_formats.replace(/ (png|jpg|jpeg)$/gi, "");
 //                    $('.progressFile').empty().append("<h1>Still " + (jsondata.CACHE.length - numSuccess) + " files to go</h1>");
-
                     $('.progressFile').empty().append("<h1>Still " + data.length + " files to go</h1>");
                     if (entry.name.indexOf("mp4") != -1) {
                         $('body').append("<video width=\"320\" height=\"240\" controls><source src=\"" + entry.fullPath + "\" type=\"video/mp4\"></video>");
@@ -110,7 +110,6 @@ var app = {
                     }
                     $(".progressbar-inner").width(0);
                     app.downloadItem(data, folderName);
-
                 }, function (error) {
                     console.log("Download error, target: " + elt.url);
                     app.downloadItem(data, folderName);
@@ -126,18 +125,17 @@ var app = {
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
             fileSystem.root.getFile("fileList", {create: true}, function (fileEntry) {
                 app.path = app.filter.exec(fileEntry.fullPath)[0];
-                fileEntry.file(function (file) {
-                    var fileTransfer = new FileTransfer();
-                    var fileListPath = app.path + "fileList";
-                    fileTransfer.download(
-                        fileListUrl, fileListPath,
-                        function (entry) {
+                var fileTransfer = new FileTransfer();
+                var fileListPath = app.path + "fileList";
+                fileTransfer.download(
+                    fileListUrl, fileListPath,
+                    function (entry) {
+                        entry.file(function (file) {
                             app.readFileList(file, folderName);
-
-                        }, function (error) {
-                            console.log("Download file list error: " + error.source);
-                        });
-                }, app.fail);
+                        }, app.fail);
+                    }, function (error) {
+                        console.log("Download file list error: " + error.source);
+                    });
             }, app.fail);
         }, app.fail);
     }

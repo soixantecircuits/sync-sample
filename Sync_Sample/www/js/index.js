@@ -23,6 +23,8 @@ var app = {
     db: undefined,
     count_success: 0,
     total_file: 0,
+    total_data: [],
+    jsonData: undefined,
     // Application Constructor
     initialize: function () {
         this.bindEvents();
@@ -50,42 +52,34 @@ var app = {
     readFileList: function (file, folderName, option) {
         var reader = new FileReader();
         reader.onloadend = function (evt) {
-            var jsondata = JSON.parse(evt.target.result);
-            app.total_file = jsondata.CACHE.length;
-            for (var i = 0, len = jsondata.CACHE.length; i < len; i++) {
-                var page = jsondata.CACHE[i];
-                app.downloadPage(page);
+            app.jsonData = JSON.parse(evt.target.result);
+            app.total_file = app.jsonData.CACHE.length;
+            for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
+                var page = app.jsonData.CACHE[i];
+                for (var j = 0, len_page = page.data.length; j < len_page; j++) {
+                    app.total_data.push({
+                        url: page.data[j].url,
+                        folderName: page.folder
+                    });
+                }
             }
-            $('.progressFile').empty().append("<h1>Still " + jsondata.TotalSize + " bytes to go!</h1>");
+            app.downloadItem(app.total_data);
+            $('.progressFile').empty().append("<h1>Still " + app.jsonData.TotalSize + " bytes to go!</h1>");
         };
         reader.readAsText(file);
     },
-    downloadPage: function (page) {
-        var data = [];
-        for (var i = 0, len = page.data.length; i < len; i++) {
-            data.push({
-                url: page.data[i].url,
-                name: page.folder
-            })
-        }
-        var jsonStringData = JSON.stringify(page);
-        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
-            fileSystem.root.getFile(page.folder + "content.json", {create: true}, function (fileEntry) {
-                fileEntry.createWriter(function (writer) {
-                    writer.write(jsonStringData);
-                }, app.fail);
-            }, app.fail);
-        }, app.fail);
-        app.downloadItem(data, page.folder);
-    },
-    downloadItem: function (data, folderName) {
+    downloadItem: function (data) {
         var numSuccess = 0,
             pathBis = "",
             url = "",
+            page = undefined,
+            folder = "",
+            jsonStringData = "",
             fileTransfer = undefined;
         if (data.length > 0) {
             var elt = data.pop();
             url = elt.url;
+            var folderName = elt.folderName;
             pathBis = app.path + folderName + "/" + elt.url.split('/').pop();
             fileTransfer = new FileTransfer();
             fileTransfer.onprogress = function (progressEvent) {
@@ -109,11 +103,43 @@ var app = {
                         $('body').append("<img width=\"200px\" height=\"200px\" src=\"" + entry.fullPath + "\" />");
                     }
                     $(".progressbar-inner").width(0);
-                    app.downloadItem(data, folderName);
+                    app.downloadItem(data);
                 }, function (error) {
                     console.log("Download error, target: " + elt.url);
-                    app.downloadItem(data, folderName);
+                    app.downloadItem(data);
                 });
+        }
+        else {
+            var writeContentJson = function (jsonStringData, folder) {
+                window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+                    fileSystem.root.getFile(folder + "content.json", {create: true}, function (fileEntry) {
+                        fileEntry.createWriter(function (writer) {
+                            writer.write(jsonStringData);
+                        }, app.fail);
+                    }, app.fail);
+                }, app.fail);
+            }
+            for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
+                page = app.jsonData.CACHE[i];
+                folder = page.folder;
+                jsonStringData = JSON.stringify(page);
+                writeContentJson(jsonStringData, folder);
+            }
+//            window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
+//                for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
+//                    page = app.jsonData.CACHE[i];
+//                    folder = page.folder;
+//                    jsonStringData = JSON.stringify(page);
+//                    fileSystem.root.getFile(folder + "content.json", {create: true}, function (fileEntry) {
+//                        fileEntry.createWriter(function (writer) {
+//                            writer.onwriteend = function () {
+//                                i++;
+//                            }
+//                            writer.write(jsonStringData);
+//                        }, app.fail);
+//                    }, app.fail);
+//                }
+//            }, app.fail);
         }
     },
 

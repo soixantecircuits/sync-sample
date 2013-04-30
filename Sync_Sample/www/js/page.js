@@ -62,10 +62,6 @@ var page = {
                         var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
                         $('.buttons').append(button);
                     }
-                    else if (entry.name != ".DS_Store") {
-                        console.log(entry.name);
-                        console.log("this is a file");
-                    }
                 }
                 page.handleClick();
             }, page.fail);

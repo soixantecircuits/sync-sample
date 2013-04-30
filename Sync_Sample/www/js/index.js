@@ -48,14 +48,14 @@ var app = {
                 window.location.replace(path.join("/") + "/page.html");
             }
             else{
-                app.updateFileList(content_json_local, "ancestor-page");
+                app.updateFileList(content_json, "ancestor-page");
             }
         }, function () {
-            app.updateFileList(content_json_local, "ancestor-page");
+            app.updateFileList(content_json, "ancestor-page");
         });
     },
 
-    readFileList: function (file, folderName, option) {
+    readFileList: function (file) {
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             app.jsonData = JSON.parse(evt.target.result);
@@ -76,8 +76,7 @@ var app = {
         reader.readAsText(file);
     },
     downloadItem: function (data) {
-        var numSuccess = 0,
-            pathBis = "",
+        var pathBis = "",
             url = "",
             page = undefined,
             folder = "",
@@ -98,15 +97,6 @@ var app = {
             fileTransfer.download(
                 url, pathBis, function (entry) {
                     app.count_success++;
-                    numSuccess++;
-                    var image_formats = "";
-                    image_formats.replace(/ (png|jpg|jpeg)$/gi, "");
-                    if (entry.name.indexOf("mp4") != -1) {
-                        $('body').append("<video width=\"320\" height=\"240\" controls><source src=\"" + entry.fullPath + "\" type=\"video/mp4\"></video>");
-                    }
-                    else if (entry.name.indexOf(image_formats) != -1) {
-                        $('body').append("<img width=\"200px\" height=\"200px\" src=\"" + entry.fullPath + "\" />");
-                    }
                     entry.file(function(file){
                         app.total_size-=file.size;
                         app.finished_size+=file.size;

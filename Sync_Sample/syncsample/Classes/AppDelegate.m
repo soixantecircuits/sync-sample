@@ -59,6 +59,8 @@
  */
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
+    [[UIApplication sharedApplication] setStatusBarHidden:YES animated:NO];
+    
     CGRect screenBounds = [[UIScreen mainScreen] bounds];
 
     self.window = [[[UIWindow alloc] initWithFrame:screenBounds] autorelease];

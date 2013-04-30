@@ -152,6 +152,7 @@ var app = {
                             app.readFileList(file, folderName);
                         }, app.fail);
                     }, function (error) {
+                        $('.progressFile > h1').empty().html("Network is not available");
                         console.log("Download file list error: " + error.source);
                     });
             }, app.fail);

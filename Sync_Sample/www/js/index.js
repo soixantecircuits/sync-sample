@@ -27,6 +27,7 @@ var app = {
     jsonData: undefined,
     total_size: 0,
     finished_size: 0,
+    storage: window.localStorage,
     // Application Constructor
     initialize: function () {
         this.bindEvents();
@@ -41,37 +42,40 @@ var app = {
             content_json_local = "http://content.loc/json";
         pathName.splice(-3, 3);
         var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
-        window.resolveLocalFileSystemURI(documantFolder + "/" + "ancestor-page", function () {
-            if (confirm("Content exist, show content?")){
-                var path = window.location.pathname.split("/");
-                path.pop();
-                window.location.replace(path.join("/") + "/page.html");
-            }
-            else{
-                app.updateFileList(content_json, "ancestor-page");
-            }
-        }, function () {
-            app.updateFileList(content_json, "ancestor-page");
-        });
+//        window.resolveLocalFileSystemURI(documantFolder + "/" + "ancestor-page", function () {
+//            if (confirm("Content exist, show content?")){
+//                var path = window.location.pathname.split("/");
+//                path.pop();
+//                window.location.replace(path.join("/") + "/page.html");
+//            }
+//            else{
+//                app.updateFileList(content_json_local, "ancestor-page");
+//            }
+//        }, function () {
+        app.updateFileList(content_json_local, "ancestor-page");
+//        });
     },
 
     readFileList: function (file) {//Read the global json file and extract informations
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             app.jsonData = JSON.parse(evt.target.result);
-            app.total_file = app.jsonData.CACHE.length;
-            app.total_size = app.jsonData.TotalSize;
-            for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
-                var page = app.jsonData.CACHE[i];
-                for (var j = 0, len_page = page.data.length; j < len_page; j++) {
-                    app.total_data.push({
-                        url: page.data[j].url,
-                        folderName: page.folder
-                    });
+            if (app.storage.getItem("data_version") != app.jsonData.version) {
+                app.storage.setItem("data_version", app.jsonData.version);
+                app.total_file = app.jsonData.CACHE.length;
+                app.total_size = app.jsonData.TotalSize;
+                for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
+                    var page = app.jsonData.CACHE[i];
+                    for (var j = 0, len_page = page.data.length; j < len_page; j++) {
+                        app.total_data.push({
+                            url: page.data[j].url,
+                            folderName: page.folder
+                        });
+                    }
                 }
+                app.downloadItem(app.total_data);
+                $('.progressFile').empty().append("<h1>Still " + app.jsonData.TotalSize + " bytes to go!</h1>");
             }
-            app.downloadItem(app.total_data);
-            $('.progressFile').empty().append("<h1>Still " + app.jsonData.TotalSize + " bytes to go!</h1>");
         };
         reader.readAsText(file);
     },
@@ -90,16 +94,16 @@ var app = {
             fileTransfer = new FileTransfer();
             fileTransfer.onprogress = function (progressEvent) {
                 if (progressEvent.lengthComputable) {
-                    var percent = ((app.finished_size+progressEvent.loaded) / app.jsonData.TotalSize) * 600;
+                    var percent = ((app.finished_size + progressEvent.loaded) / app.jsonData.TotalSize) * 600;
                     $(".progressbar-inner").width(percent);
                 }
             };
             fileTransfer.download(
                 url, filePath, function (entry) {
                     app.count_success++;
-                    entry.file(function(file){
-                        app.total_size-=file.size;
-                        app.finished_size+=file.size;
+                    entry.file(function (file) {
+                        app.total_size -= file.size;
+                        app.finished_size += file.size;
                         $('.progressFile').empty().append("<h1>Still " + app.total_size + " bytes to go!</h1>");
                     }, app.fail)
                     app.downloadItem(data);
@@ -125,13 +129,13 @@ var app = {
                 jsonStringData = JSON.stringify(page);
                 writeContentJson(jsonStringData, folder);
             }
-            setTimeout(function () {
-                if (confirm("Download finished, View content?")){
-                    var path = window.location.pathname.split("/");
-                    path.pop();
-                    window.location.replace(path.join("/") + "/page.html");
-                }
-            }, 1000)
+//            setTimeout(function () {
+//                if (confirm("Download finished, View content?")){
+//                    var path = window.location.pathname.split("/");
+//                    path.pop();
+//                    window.location.replace(path.join("/") + "/page.html");
+//                }
+//            }, 1000)
         }
     },
 

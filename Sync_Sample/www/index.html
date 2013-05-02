@@ -29,7 +29,6 @@
     <script type="text/javascript" src="js/Tools.js"></script>
     <script type="text/javascript" src="js/zepto.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
-    <!--<script type="text/javascript" src="js/page.js"></script>-->
     <script type="text/javascript" src="js/handlebars.js"></script>
     <script src="http://192.168.1.89:8081/target/target-script-min.js"></script>
 </head>
@@ -40,6 +39,7 @@
             <div class="progressbar-inner"></div>
         </div>
         <div class="progress-status"><p>Still 0 bytes to go!</div>
+        <div class="current-path"></div>
     </header>
     <div class="line_separator"></div>
     <h1>Offline Content Page</h1>
@@ -69,8 +69,9 @@
         </div>
     </footer>
     <script type="text/javascript">
-        app.initialize();
-        page.initialize();
+        $(function() {
+            app.initialize();
+        });
     </script>
 </body>
 </html>

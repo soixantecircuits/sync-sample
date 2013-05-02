@@ -168,6 +168,12 @@ h1 {
     margin-left: 5px;
 }
 
+.current-path{
+    position: relative;
+    float: left;
+    width: 100%;
+    margin: 0 auto 0 5px;
+}
 
 /*
  * Color Options
@@ -189,7 +195,7 @@ h1 {
 }
 
 header{
-    height: 75px;
+    height: 95px;
 }
 
 footer{

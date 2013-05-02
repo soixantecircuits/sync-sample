@@ -111,7 +111,6 @@ var app = {
                     }
                 }, app.fail);
             }, app.fail);
-            log("here");
             var directoryEntry = new DirectoryEntry(folderName, folderAbsolutePath);
             var directoryReader = directoryEntry.createReader();
             directoryReader.readEntries(function (entries) {
@@ -127,6 +126,7 @@ var app = {
 //                        $('#bl-work-items').append(button);
                     }
                 }
+                app.showCurrentPath(folderName);
                 app.handleClick();
             }, app.fail);
         }, app.fail)
@@ -250,6 +250,9 @@ var app = {
             log("update");
             app.updateFileList(app.config.content_json_local);
         })
+    },
+    showCurrentPath: function(currentPath){
+        $('.current-path').html(currentPath);
     }
 };
 

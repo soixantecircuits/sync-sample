@@ -22,6 +22,10 @@ var log= function(message){
 }
 
 var app = {
+    config:{
+        content_json : "http://contentcontent.eu01.aws.af.cm/json",
+        content_json_local : "http://content.loc/json"
+    },
     path: '',
     filter: /^\/(.*)\//,
     eventFolder: "",
@@ -41,15 +45,100 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     onDeviceReady: function () {
+        console.log("Document is ready");
+        app.storage.setItem("data_version", "5.0");
         app.initEvents();
-        app.updateFileList(content_json_local);
+        $(".home").on('click', function () {
+            log("click");
+            app.cleanPage();
+            app.readFolder("ancestor-page");
+        });
+        app.readFolder("ancestor-page");
+        app.updateFileList(app.config.content_json_local);
+    },
+    handleClick: function () {
+        $('.btn').on('click', function () {
+            app.cleanPage();
+            app.readFolder( $(this).data("path"));
+        });
+    },
+    fail: function (evt) {
+        console.log(evt.target.error.code);
+    },
+    cleanPage: function () {
+        $(".medias").empty();
+        $(".buttons").empty();
+        $(".backButton").remove();
+    },
+    addBackButton: function (currentPath){
+        var path = currentPath.split("/");
+        path.splice(-2, 2);
+        $('body').append("<button class=\"backButton\">BACK</button>");
+        $('.backButton').on('click', function(){
+            app.cleanPage();
+            app.readFolder(path.join("/"))
+            $(this).remove();
+        });
+    },
+    readFolder: function (folderName) {
+        window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
+            var folderAbsolutePath = fs.root.fullPath + "/" + folderName;
+            var jsonFilePath=folderAbsolutePath+"/content.json";
+            fs.root.getFile(jsonFilePath, {}, function (fileEntry) {
+                fileEntry.file(function (file) {
+                    var reader = new FileReader();
+                    reader.readAsText(file);
+                    reader.onloadend = function (evt) {
+                        var jsondata = JSON.parse(evt.target.result);
+                        var pageContent = {data:[]};//Will add title, description, etc
+                        for (var i = 0, len = jsondata.data.length; i < len; i++) {
+                            var media=jsondata.data[i],
+                                isImage=(media.type=="image")? true: false,
+                                isVideo=(media.type=="video")? true: false;
+                            pageContent.data.push({
+                                name: media.name,
+                                path: folderAbsolutePath+"/"+media.name,
+                                isImage: isImage,
+                                isVideo: isVideo
+                            })
+                        }
+                        var source = $("#media-template").html();
+                        var template = Handlebars.compile(source);
+                        var context = pageContent.data;
+                        $(".media").remove();
+                        $("body").append(template(context))
+                        app.addBackButton(jsondata.folder);
+                    }
+                }, app.fail);
+            }, app.fail);
+            log("here");
+            var directoryEntry = new DirectoryEntry(folderName, folderAbsolutePath);
+            var directoryReader = directoryEntry.createReader();
+            directoryReader.readEntries(function (entries) {
+                var i;
+                for (i = 0; i < entries.length; i++) {
+                    var entry = entries[i];
+                    if (entry.isDirectory) {
+                        log("directory");
+                        var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
+                        $('.buttons').append(button);
+                        log($('.buttons'));
+//                        var button = "<li  class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "data-panel=\"panel-1\"><a href=\"#\"></a></li>"
+//                        $('#bl-work-items').append(button);
+                    }
+                }
+                app.handleClick();
+            }, app.fail);
+        }, app.fail)
     },
 
     readFileList: function (file) {//Read the global json file and extract informations
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             app.jsonData = JSON.parse(evt.target.result);
-            if (app.storage.getItem("data_version") != app.jsonData.version) {
+            log(app.jsonData.version);
+            log(app.storage.getItem("data_version"));
+//            if (app.storage.getItem("data_version") != app.jsonData.version) {
                 app.storage.setItem("data_version", app.jsonData.version);
                 app.total_file = app.jsonData.CACHE.length;
                 app.total_size = app.jsonData.TotalSize;
@@ -62,12 +151,13 @@ var app = {
                         });
                     }
                 }
+                log(app.total_data);
                 app.downloadItem(app.total_data);
                 $('.progress-status').empty().append("<p>Still " + app.jsonData.TotalSize + " bytes to go!</p>");
-            }
-            else{
-                $('.message').html("The content is updated!");
-            }
+//            }
+//            else{
+//                $('.message').html("The content is updated!");
+//            }
         };
         reader.readAsText(file);
     },
@@ -129,11 +219,13 @@ var app = {
     },
 
     updateFileList: function (fileListUrl) {//update the global json file
+        log("update file list");
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
             fileSystem.root.getFile("fileList", {create: true}, function (fileEntry) {
                 app.path = app.filter.exec(fileEntry.fullPath)[0];
                 var fileTransfer = new FileTransfer();
                 var fileListPath = app.path + "fileList";
+                log("before download");
                 fileTransfer.download(
                     fileListUrl, fileListPath,
                     function (entry) {
@@ -141,7 +233,7 @@ var app = {
                             app.readFileList(file);
                         }, app.fail);
                     }, function (error) {
-                        $('.progressFile > h1').empty().html("Network is not available");
+                        $('.message').html("Network is not available");
                         console.log("Download file list error: " + error.source);
                     });
             }, app.fail);
@@ -150,11 +242,15 @@ var app = {
     initEvents: function(){
         $('.reload_button').on('click', function(){
             $('.message').html("Page refreshed");
+            app.cleanPage();
             app.readFolder('ancestor-page');
 
         });
         $('.update_button').on('click', function(){
-            app.updateFileList(content_json_local);
+            log("update");
+            app.updateFileList(app.config.content_json_local);
         })
     }
 };
+
+

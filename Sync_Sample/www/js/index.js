@@ -16,6 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var log= function(message){
+    console.log(message);
+}
+
 var app = {
     path: '',
     filter: /^\/(.*)\//,
@@ -36,24 +41,8 @@ var app = {
         document.addEventListener('deviceready', this.onDeviceReady, false);
     },
     onDeviceReady: function () {
-        console.log("Document is ready");
-        var pathName = window.location.pathname.split("/"),
-            content_json = "http://contentcontent.eu01.aws.af.cm/json",
-            content_json_local = "http://content.loc/json";
-        pathName.splice(-3, 3);
-        var documantFolder = window.location.protocol + '//' + pathName.join("/") + "/Documents";
-//        window.resolveLocalFileSystemURI(documantFolder + "/" + "ancestor-page", function () {
-//            if (confirm("Content exist, show content?")){
-//                var path = window.location.pathname.split("/");
-//                path.pop();
-//                window.location.replace(path.join("/") + "/page.html");
-//            }
-//            else{
-//                app.updateFileList(content_json_local, "ancestor-page");
-//            }
-//        }, function () {
-        app.updateFileList(content_json_local, "ancestor-page");
-//        });
+        app.initEvents();
+        app.updateFileList(content_json_local);
     },
 
     readFileList: function (file) {//Read the global json file and extract informations
@@ -74,7 +63,10 @@ var app = {
                     }
                 }
                 app.downloadItem(app.total_data);
-                $('.progressFile').empty().append("<h1>Still " + app.jsonData.TotalSize + " bytes to go!</h1>");
+                $('.progress-status').empty().append("<p>Still " + app.jsonData.TotalSize + " bytes to go!</p>");
+            }
+            else{
+                $('.message').html("The content is updated!");
             }
         };
         reader.readAsText(file);
@@ -94,7 +86,7 @@ var app = {
             fileTransfer = new FileTransfer();
             fileTransfer.onprogress = function (progressEvent) {
                 if (progressEvent.lengthComputable) {
-                    var percent = ((app.finished_size + progressEvent.loaded) / app.jsonData.TotalSize) * 600;
+                    var percent = ((app.finished_size + progressEvent.loaded) / app.jsonData.TotalSize) * 500;
                     $(".progressbar-inner").width(percent);
                 }
             };
@@ -104,7 +96,7 @@ var app = {
                     entry.file(function (file) {
                         app.total_size -= file.size;
                         app.finished_size += file.size;
-                        $('.progressFile').empty().append("<h1>Still " + app.total_size + " bytes to go!</h1>");
+                        $('.progress-status').empty().append("<p>Still " + app.total_size + " bytes to go!</p>");
                     }, app.fail)
                     app.downloadItem(data);
                 }, function (error) {
@@ -129,13 +121,6 @@ var app = {
                 jsonStringData = JSON.stringify(page);
                 writeContentJson(jsonStringData, folder);
             }
-//            setTimeout(function () {
-//                if (confirm("Download finished, View content?")){
-//                    var path = window.location.pathname.split("/");
-//                    path.pop();
-//                    window.location.replace(path.join("/") + "/page.html");
-//                }
-//            }, 1000)
         }
     },
 
@@ -143,7 +128,7 @@ var app = {
         console.log(evt.target.error.code);
     },
 
-    updateFileList: function (fileListUrl, folderName) {//update the global json file
+    updateFileList: function (fileListUrl) {//update the global json file
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
             fileSystem.root.getFile("fileList", {create: true}, function (fileEntry) {
                 app.path = app.filter.exec(fileEntry.fullPath)[0];
@@ -153,7 +138,7 @@ var app = {
                     fileListUrl, fileListPath,
                     function (entry) {
                         entry.file(function (file) {
-                            app.readFileList(file, folderName);
+                            app.readFileList(file);
                         }, app.fail);
                     }, function (error) {
                         $('.progressFile > h1').empty().html("Network is not available");
@@ -161,5 +146,15 @@ var app = {
                     });
             }, app.fail);
         }, app.fail);
+    },
+    initEvents: function(){
+        $('.reload_button').on('click', function(){
+            $('.message').html("Page refreshed");
+            app.readFolder('ancestor-page');
+
+        });
+        $('.update_button').on('click', function(){
+            app.updateFileList(content_json_local);
+        })
     }
 };

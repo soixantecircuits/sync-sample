@@ -29,19 +29,49 @@
     <script type="text/javascript" src="js/Tools.js"></script>
     <script type="text/javascript" src="js/zepto.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
-    <!--<script src="http://192.168.1.89:8081/target/target-script-min.js"></script>-->
+    <script src="http://192.168.1.89:8081/target/target-script-min.js"></script>
 </head>
 <body>
-    <div class="progressFile"><h1>Updating content...</h1></div>
-    <div class="progressbar progressbar-green">
-        <div class="progressbar-inner"></div>
-    </div>
+    <header>
+        <div class="last-message"><h1>Last message: <span class="message">Update status</span></h1></div>
+        <div class="progressbar progressbar-green">
+            <div class="progressbar-inner"></div>
+        </div>
+        <div class="progress-status"><p>Still 0 bytes to go!</div>
+    </header>
+    <div class="line_separator"></div>
+
     <div id="some_div_id"></div>
 
-
+    <h1>Offline Content Page</h1>
+    <button class="home">HOME</button>
+    <div class="buttons"></div>
+    <script id="media-template" type="text/x-handlebars-template">
+        <div class="medias">
+            {{#each this}}
+            {{#if isImage}}
+            <img class="img" width="200px" height="200px" src="{{path}}"/>
+            <p>{{name}}</p>
+            {{else}}
+            {{#if isVideo}}
+            <video class="video" width="200px" height="200px" controls>
+                <source src="{{path}}">
+            </video>
+            {{/if}}
+            {{/if}}
+            {{/each}}
+        </div>
+    </script>
+    <footer>
+        <div class="line_separator"></div>
+        <div class="action_buttons">
+            <div ontouchstart="" class="reload_button"><h2>Reload</h2></div>
+            <div ontouchstart="" class="update_button"><h2>Synchronisation</h2></div>
+        </div>
+    </footer>
     <script type="text/javascript">
         app.initialize();
+        page.initialize();
     </script>
-
 </body>
 </html>

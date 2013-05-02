@@ -509,8 +509,8 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Shiyue Wang (26ZSM87H2J)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Shiyue Wang (26ZSM87H2J)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Soixante circuits (97K2B989BM)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Soixante circuits (97K2B989BM)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
@@ -536,8 +536,8 @@
 					"-all_load",
 					"-Obj-C",
 				);
-				PROVISIONING_PROFILE = "968588BE-889D-405A-8802-84A987EDFF92";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "968588BE-889D-405A-8802-84A987EDFF92";
+				PROVISIONING_PROFILE = "438D00BC-2D4B-4F8B-9B5A-262BD13B8E00";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "438D00BC-2D4B-4F8B-9B5A-262BD13B8E00";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				USER_HEADER_SEARCH_PATHS = "";
@@ -552,8 +552,8 @@
 				CLANG_WARN_ENUM_CONVERSION = YES;
 				CLANG_WARN_INT_CONVERSION = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "iPhone Developer: Shiyue Wang (26ZSM87H2J)";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Shiyue Wang (26ZSM87H2J)";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Soixante circuits (97K2B989BM)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Soixante circuits (97K2B989BM)";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_THUMB_SUPPORT = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
@@ -579,8 +579,8 @@
 					"-all_load",
 					"-Obj-C",
 				);
-				PROVISIONING_PROFILE = "968588BE-889D-405A-8802-84A987EDFF92";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "968588BE-889D-405A-8802-84A987EDFF92";
+				PROVISIONING_PROFILE = "438D00BC-2D4B-4F8B-9B5A-262BD13B8E00";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "438D00BC-2D4B-4F8B-9B5A-262BD13B8E00";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = NO;
 				USER_HEADER_SEARCH_PATHS = "";

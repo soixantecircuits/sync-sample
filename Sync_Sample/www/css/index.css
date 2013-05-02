@@ -125,10 +125,11 @@ h1 {
  */
 
 .progressbar {
-
-    width: 600px;
+    position: relative;
+    float: left;
+    width: 500px;
     height: 16px;
-    margin: 80px auto 20px auto;
+    margin: 10px 5px 10px;
     padding: 0px;
 
     background: #cfcfcf;
@@ -161,6 +162,13 @@ h1 {
     box-shadow: inset 0px 2px 8px rgba(255, 255, 255, .5), inset -1px -1px 0px rgba(0, 0, 0, .2);
 }
 
+.progress-status{
+    position: relative;
+    float: left;
+    margin-left: 5px;
+}
+
+
 /*
  * Color Options
  */
@@ -171,9 +179,66 @@ h1 {
 }
 
 .progressFile{
+    position: relative;
     margin: 0, auto;
     text-align: center;
  }
+
+.line_separator{
+   border: solid black 2px;
+}
+
+header{
+    height: 75px;
+}
+
+footer{
+    position: fixed;
+    bottom: 0px;
+    height: 50px;
+    width: 100%;
+
+}
+
+.action_buttons{
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 0;
+    margin-bottom: 0;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+}
+
+.action_buttons .h2{
+    margin: 0;
+}
+
+.reload_button{
+    float: left;
+    position: relative;
+    width: 50%;
+    height: 100%;
+    background-color: #F06060;
+}
+
+.update_button{
+    background-color: #10A296;
+    float: left;
+    position: relative;
+    width: 50%;
+    height: 100%;
+}
+
+.update_button:active{
+    background-color: yellow;
+}
+
+.reload_button:active{
+    background-color: yellow;
+
+}
+
 
 
 

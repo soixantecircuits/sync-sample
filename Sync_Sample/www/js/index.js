@@ -86,8 +86,9 @@ var app = {
 
             // show panel for this work item
             $('#bl-panel-work-items').addClass('bl-panel-items-show');
-            app.currentPanelIndex = $(this).data('panel');
-            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='" + app.currentPanelIndex + "']");
+//            app.currentPanelIndex = $(this).data('panel');
+            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='" + $(this).data('panel') + "']");
+            app.currentPanelIndex = app.currentPanel.index();
             app.currentPanel.addClass('bl-show-work');
 
             $('.bl-icon-close').on('click', function () {
@@ -99,31 +100,17 @@ var app = {
 
             // navigating the work items: current work panel scales down and the next work panel slides up
             $('.bl-next-work').on('click', function () {
-                var transEndEventNames = {
-                    'WebkitTransition': 'webkitTransitionEnd',
-                    'MozTransition': 'transitionend',
-                    'OTransition': 'oTransitionEnd',
-                    'msTransition': 'MSTransitionEnd',
-                    'transition': 'transitionend'
-                }
-                // transition end event name
-                var transEndEventName = transEndEventNames[ Modernizr.prefixed('transition') ];
-                if (isAnimating) {
-                    return false;
-                }
-                isAnimating = true;
-
-//                        var $currentPanel = $workPanels.eq( app.currentPanelIndex );
-                app.currentPanelIndex = app.currentPanelIndex < 3 - 1 ? app.currentPanelIndex + 1 : 0;
+                app.currentPanelIndex = app.currentPanelIndex < $('#bl-panel-work-items').children('div').length - 1 ? app.currentPanelIndex + 1 : 0;
                 var $nextPanel = $('#bl-panel-work-items').children('div').eq(app.currentPanelIndex);
-                log("index:")
-                log(app.currentPanelIndex);
-                app.currentPanel.removeClass('bl-show-work').addClass('bl-hide-current-work').on(transEndEventName, function (event) {
+                app.currentPanel.removeClass('bl-show-work').addClass('bl-hide-current-work').on('webkitTransitionEnd', function (event) {
                     if (!$(event.target).is('div')) return false;
-                    $(this).off(transEndEventName).removeClass('bl-hide-current-work');
-                    isAnimating = false;
+                    $(this).off('webkitTransitionEnd').removeClass('bl-hide-current-work');
+//                    isAnimating = false;
                 });
+//                $('.bl-show-work').removeClass('bl-show-work');
                 $nextPanel.addClass('bl-show-work');
+                app.currentPanel=$nextPanel;
+
             });
         })
     },
@@ -156,8 +143,16 @@ var app = {
 //                        $(".media").remove();
                         $("#bl-panel-work-items").empty().append(template(context));
                         $(".media-container>img, .media-container>video").css({
-                            'left': ($(window).width()-$(".media-container>img").width()) / 2
+                            'left': ($("body").width()-$(".media-container>img").width()) / 2
                         });
+                        $(window).on('resize', function(){
+                            $(".media-container>img, .media-container>video").css({
+                                'left': ($("body").width()-$(".media-container>img").width()) / 2
+                            });
+                        });
+                        if($('#bl-panel-work-items').children('div').length==1){
+                            $('.bl-next-work').hide();
+                        }
                         app.addBackButton(jsondata.folder);
 
                     }

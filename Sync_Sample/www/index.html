@@ -53,20 +53,22 @@
             </div>
             <div class="bl-content">
                 <h2>Offline Content Page</h2>
-                <button class="home">HOME</button>
-                <!--<div class="buttons"></div>-->
-                <ul id="bl-work-items"></ul>
+                <div class="btn home">HOME</div>
+                <ul class="nav_buttons"></ul>
+                <ul id="bl-work-items">
+
+                </ul>
                 <script id="media-template" type="text/x-handlebars-template">
                     <!--<div class="medias">-->
                         {{#each this}}
                         {{#if isImage}}
-                        <div data-panel="panel-{{index}}">
-                        <img class="img" width="200px" height="200px" src="{{path}}"/>
+                        <div class="media-container" data-panel="panel-{{index}}">
+                        <img class="img" src="{{path}}"/>
                         </div>
                         {{else}}
                         {{#if isVideo}}
-                        <div data-panel="panel-{{index}}">
-                        <video class="video" width="200px" height="200px" controls>
+                        <div class="media-container" data-panel="panel-{{index}}">
+                        <video class="video" controls>
                             <source src="{{path}}">
                         </video>
                         </div>

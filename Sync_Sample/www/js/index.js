@@ -17,14 +17,12 @@
  * under the License.
  */
 
-var log= function(message){
-    console.log(message);
-}
+
 
 var app = {
-    config:{
-        content_json : "http://contentcontent.eu01.aws.af.cm/json",
-        content_json_local : "http://content.loc/json"
+    config: {
+        content_json: "http://contentcontent.eu01.aws.af.cm/json",
+        content_json_local: "http://content.loc/json"
     },
     path: '',
     filter: /^\/(.*)\//,
@@ -37,6 +35,8 @@ var app = {
     total_size: 0,
     finished_size: 0,
     storage: window.localStorage,
+    currentPanel: undefined,
+    currentPanelIndex: 0,
     // Application Constructor
     initialize: function () {
         this.bindEvents();
@@ -46,10 +46,8 @@ var app = {
     },
     onDeviceReady: function () {
         console.log("Document is ready");
-        app.storage.setItem("data_version", "5.0");
         app.initEvents();
         $(".home").on('click', function () {
-            log("click");
             app.cleanPage();
             app.readFolder("ancestor-page");
         });
@@ -59,45 +57,95 @@ var app = {
     handleClick: function () {
         $('.btn').on('click', function () {
             app.cleanPage();
-            app.readFolder( $(this).data("path"));
+            app.readFolder($(this).data("path"));
         });
     },
     fail: function (evt) {
         console.log(evt.target.error.code);
     },
     cleanPage: function () {
-        $(".medias").empty();
-        $("#bl-work-items").empty();
+//        $(".medias").empty();
+//        $("#bl-work-items").empty();
+        $('#bl-work-items').empty();
+        $(".nav_buttons").empty();
         $(".backButton").remove();
     },
-    addBackButton: function (currentPath){
+    addBackButton: function (currentPath) {
         var path = currentPath.split("/");
         path.splice(-2, 2);
-        $('.bl-content').append("<button class=\"backButton\">BACK</button>");
-        $('.backButton').on('click', function(){
+        $('#bl-work-items').append("<div class=\"btn\" data-panel=\"panel-1\">Show Content</div>");
+        $('.bl-content').append("<div class=\"btn backButton\">BACK</div>");
+        $('.backButton').on('click', function () {
             app.cleanPage();
             app.readFolder(path.join("/"))
             $(this).remove();
         });
+        $("#bl-work-items>div").on('click', function () {
+            // scale down main section
+            $('#bl-work-section').addClass('bl-scale-down');
+
+            // show panel for this work item
+            $('#bl-panel-work-items').addClass('bl-panel-items-show');
+            app.currentPanelIndex = $(this).data('panel');
+            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='" + app.currentPanelIndex + "']");
+            app.currentPanel.addClass('bl-show-work');
+
+            $('.bl-icon-close').on('click', function () {
+                // scale up main section
+                $('#bl-work-section').removeClass('bl-scale-down');
+                $('#bl-panel-work-items').removeClass('bl-panel-items-show');
+                $('.bl-show-work').removeClass('bl-show-work');
+            });
+
+            // navigating the work items: current work panel scales down and the next work panel slides up
+            $('.bl-next-work').on('click', function () {
+                var transEndEventNames = {
+                    'WebkitTransition': 'webkitTransitionEnd',
+                    'MozTransition': 'transitionend',
+                    'OTransition': 'oTransitionEnd',
+                    'msTransition': 'MSTransitionEnd',
+                    'transition': 'transitionend'
+                }
+                // transition end event name
+                var transEndEventName = transEndEventNames[ Modernizr.prefixed('transition') ];
+                if (isAnimating) {
+                    return false;
+                }
+                isAnimating = true;
+
+//                        var $currentPanel = $workPanels.eq( app.currentPanelIndex );
+                app.currentPanelIndex = app.currentPanelIndex < 3 - 1 ? app.currentPanelIndex + 1 : 0;
+                var $nextPanel = $('#bl-panel-work-items').children('div').eq(app.currentPanelIndex);
+                log("index:")
+                log(app.currentPanelIndex);
+                app.currentPanel.removeClass('bl-show-work').addClass('bl-hide-current-work').on(transEndEventName, function (event) {
+                    if (!$(event.target).is('div')) return false;
+                    $(this).off(transEndEventName).removeClass('bl-hide-current-work');
+                    isAnimating = false;
+                });
+                $nextPanel.addClass('bl-show-work');
+            });
+        })
     },
     readFolder: function (folderName) {
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
             var folderAbsolutePath = fs.root.fullPath + "/" + folderName;
-            var jsonFilePath=folderAbsolutePath+"/content.json";
+            var jsonFilePath = folderAbsolutePath + "/content.json";
             fs.root.getFile(jsonFilePath, {}, function (fileEntry) {
                 fileEntry.file(function (file) {
                     var reader = new FileReader();
                     reader.readAsText(file);
                     reader.onloadend = function (evt) {
                         var jsondata = JSON.parse(evt.target.result);
-                        var pageContent = {data:[]};//Will add title, description, etc
+                        var pageContent = {data: []};//Will add title, description, etc
                         for (var i = 0, len = jsondata.data.length; i < len; i++) {
-                            var media=jsondata.data[i],
-                                isImage=(media.type=="image")? true: false,
-                                isVideo=(media.type=="video")? true: false;
+                            var media = jsondata.data[i],
+                                isImage = (media.type == "image") ? true : false,
+                                isVideo = (media.type == "video") ? true : false;
                             pageContent.data.push({
+                                index: i + 1,
                                 name: media.name,
-                                path: folderAbsolutePath+"/"+media.name,
+                                path: folderAbsolutePath + "/" + media.name,
                                 isImage: isImage,
                                 isVideo: isVideo
                             })
@@ -106,31 +154,37 @@ var app = {
                         var template = Handlebars.compile(source);
                         var context = pageContent.data;
 //                        $(".media").remove();
-                        $("#bl-panel-work-items").empty();
-
-                        $("#bl-panel-work-items").append(template(context))
+                        $("#bl-panel-work-items").empty().append(template(context))
                         app.addBackButton(jsondata.folder);
+
                     }
                 }, app.fail);
             }, app.fail);
             var directoryEntry = new DirectoryEntry(folderName, folderAbsolutePath);
             var directoryReader = directoryEntry.createReader();
             directoryReader.readEntries(function (entries) {
-                var countDirectory=1;
+                var countDirectory = 1;
                 for (var i = 0; i < entries.length; i++) {
                     var entry = entries[i];
                     if (entry.isDirectory) {
-                        log("directory");
 //                        var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
 //                        $('.buttons').append(button);
-                        log($('.buttons'));
-                        var button = "<li  class=\"btn\" data-panel=\"panel-"+countDirectory+"\" data-path=\"" + folderName + "/"+ entry.name + "\"><a href=\"#\">"  + entry.name + "</a></li>"
-                        $('#bl-work-items').append(button);
+                        var button = "<li class=\"btn btn-path\" data-panel=\"panel-" + countDirectory + "\" data-path=\"" + folderName + "/" + entry.name + "\">" + entry.name + "</li>"
+                        $('.nav_buttons').append(button);
+//                        $('#bl-work-items').append(button);
                         countDirectory++;
                     }
                 }
                 app.showCurrentPath(folderName);
-                app.handleClick();
+                $('.nav_buttons > li').on('click', function (event) {
+
+                    app.cleanPage();
+                    app.readFolder($(this).data("path"));
+
+                });
+
+
+//                app.handleClick();
             }, app.fail);
         }, app.fail)
     },
@@ -139,8 +193,6 @@ var app = {
         var reader = new FileReader();
         reader.onloadend = function (evt) {
             app.jsonData = JSON.parse(evt.target.result);
-            log(app.jsonData.version);
-            log(app.storage.getItem("data_version"));
             if (app.storage.getItem("data_version") != app.jsonData.version) {
                 app.storage.setItem("data_version", app.jsonData.version);
                 app.total_file = app.jsonData.CACHE.length;
@@ -154,11 +206,10 @@ var app = {
                         });
                     }
                 }
-                log(app.total_data);
                 app.downloadItem(app.total_data);
                 $('.progress-status').empty().append("<p>Still " + app.jsonData.TotalSize + " bytes to go!</p>");
             }
-            else{
+            else {
                 $('.message').html("The content is updated!");
             }
         };
@@ -222,13 +273,11 @@ var app = {
     },
 
     updateFileList: function (fileListUrl) {//update the global json file
-        log("update file list");
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fileSystem) {
             fileSystem.root.getFile("fileList", {create: true}, function (fileEntry) {
                 app.path = app.filter.exec(fileEntry.fullPath)[0];
                 var fileTransfer = new FileTransfer();
                 var fileListPath = app.path + "fileList";
-                log("before download");
                 fileTransfer.download(
                     fileListUrl, fileListPath,
                     function (entry) {
@@ -242,21 +291,24 @@ var app = {
             }, app.fail);
         }, app.fail);
     },
-    initEvents: function(){
-        $('.reload_button').on('click', function(){
+    initEvents: function () {
+        $('.reload_button').on('click', function () {
             $('.message').html("Page refreshed");
             app.cleanPage();
             app.readFolder('ancestor-page');
 
         });
-        $('.update_button').on('click', function(){
-            log("update");
+        $('.update_button').on('click', function () {
             app.updateFileList(app.config.content_json_local);
         })
     },
-    showCurrentPath: function(currentPath){
+    showCurrentPath: function (currentPath) {
         $('.current-path').html(currentPath);
     }
 };
+
+var log = function (message) {
+    console.log(message);
+}
 
 

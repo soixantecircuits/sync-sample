@@ -265,15 +265,57 @@ div.bl-panel-items > div > div {
     opacity: 0;
     pointer-events: none;
     position: absolute;
-    top: 95px;
-    left: 30px;
-    right: 30px;
-    bottom: 50px;
+    /*top: 95px;*/
+    top: 0px;
+    bottom: 0px;
+    /*left: 30px;*/
+    /*right: 30px;*/
+    /*bottom: 50px;*/
     padding: 0 20px;
     overflow: hidden;
+    width: 100%;
 }
 
 
+#bl-panel-work-items img{
+    width: 100%;
+    height: 80%;
+}
+
+#bl-panel-work-items video{
+    width: 100%;
+    /*height: 80%;*/
+}
+
+.btn{
+    /*-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;*/
+    /*-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;*/
+    /*box-shadow:inset 0px 1px 0px 0px #ffffff;*/
+    background-color: #F06060;
+    -moz-border-radius:6px;
+    -webkit-border-radius:6px;
+    border-radius:6px;
+    /*border:1px solid #dcdcdc;*/
+    display:inline-block;
+    color:white;
+    font-family:arial;
+    font-size:15px;
+    font-weight:bold;
+    padding:6px 24px;
+    text-decoration:none;
+    width: auto!important;
+
+    /*text-shadow:1px 1px 0px #ffffff;*/
+}
+
+.btn.btn-path{
+    background-color: #10A296;
+}
+
+#bl-work-items{
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
 
 
 

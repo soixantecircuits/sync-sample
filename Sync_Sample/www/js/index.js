@@ -154,7 +154,10 @@ var app = {
                         var template = Handlebars.compile(source);
                         var context = pageContent.data;
 //                        $(".media").remove();
-                        $("#bl-panel-work-items").empty().append(template(context))
+                        $("#bl-panel-work-items").empty().append(template(context));
+                        $(".media-container>img, .media-container>video").css({
+                            'left': ($(window).width()-$(".media-container>img").width()) / 2
+                        });
                         app.addBackButton(jsondata.folder);
 
                     }

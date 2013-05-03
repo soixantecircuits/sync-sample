@@ -67,13 +67,13 @@ var app = {
     },
     cleanPage: function () {
         $(".medias").empty();
-        $(".buttons").empty();
+        $("#bl-work-items").empty();
         $(".backButton").remove();
     },
     addBackButton: function (currentPath){
         var path = currentPath.split("/");
         path.splice(-2, 2);
-        $('body').append("<button class=\"backButton\">BACK</button>");
+        $('.bl-content').append("<button class=\"backButton\">BACK</button>");
         $('.backButton').on('click', function(){
             app.cleanPage();
             app.readFolder(path.join("/"))
@@ -105,8 +105,10 @@ var app = {
                         var source = $("#media-template").html();
                         var template = Handlebars.compile(source);
                         var context = pageContent.data;
-                        $(".media").remove();
-                        $("body").append(template(context))
+//                        $(".media").remove();
+                        $("#bl-panel-work-items").empty();
+
+                        $("#bl-panel-work-items").append(template(context))
                         app.addBackButton(jsondata.folder);
                     }
                 }, app.fail);
@@ -114,16 +116,17 @@ var app = {
             var directoryEntry = new DirectoryEntry(folderName, folderAbsolutePath);
             var directoryReader = directoryEntry.createReader();
             directoryReader.readEntries(function (entries) {
-                var i;
-                for (i = 0; i < entries.length; i++) {
+                var countDirectory=1;
+                for (var i = 0; i < entries.length; i++) {
                     var entry = entries[i];
                     if (entry.isDirectory) {
                         log("directory");
-                        var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
-                        $('.buttons').append(button);
+//                        var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
+//                        $('.buttons').append(button);
                         log($('.buttons'));
-//                        var button = "<li  class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "data-panel=\"panel-1\"><a href=\"#\"></a></li>"
-//                        $('#bl-work-items').append(button);
+                        var button = "<li  class=\"btn\" data-panel=\"panel-"+countDirectory+"\" data-path=\"" + folderName + "/"+ entry.name + "\"><a href=\"#\">"  + entry.name + "</a></li>"
+                        $('#bl-work-items').append(button);
+                        countDirectory++;
                     }
                 }
                 app.showCurrentPath(folderName);
@@ -138,7 +141,7 @@ var app = {
             app.jsonData = JSON.parse(evt.target.result);
             log(app.jsonData.version);
             log(app.storage.getItem("data_version"));
-//            if (app.storage.getItem("data_version") != app.jsonData.version) {
+            if (app.storage.getItem("data_version") != app.jsonData.version) {
                 app.storage.setItem("data_version", app.jsonData.version);
                 app.total_file = app.jsonData.CACHE.length;
                 app.total_size = app.jsonData.TotalSize;
@@ -154,10 +157,10 @@ var app = {
                 log(app.total_data);
                 app.downloadItem(app.total_data);
                 $('.progress-status').empty().append("<p>Still " + app.jsonData.TotalSize + " bytes to go!</p>");
-//            }
-//            else{
-//                $('.message').html("The content is updated!");
-//            }
+            }
+            else{
+                $('.message').html("The content is updated!");
+            }
         };
         reader.readAsText(file);
     },

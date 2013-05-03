@@ -216,8 +216,8 @@ footer{
     text-align: center;
 }
 
-.action_buttons .h2{
-    margin: 0;
+.action_buttons h2{
+    margin: 8px auto;
 }
 
 .reload_button{
@@ -243,6 +243,34 @@ footer{
 .reload_button:active{
     background-color: yellow;
 
+}
+
+#bl-work-section{
+    background: #F98262;
+}
+
+#bl-main{
+    height: 100%;
+}
+
+.container{
+    top: 95px;
+    bottom: 50px;
+    position: absolute;
+    width: 100%;
+}
+
+.bl-content,
+div.bl-panel-items > div > div {
+    opacity: 0;
+    pointer-events: none;
+    position: absolute;
+    top: 95px;
+    left: 30px;
+    right: 30px;
+    bottom: 50px;
+    padding: 0 20px;
+    overflow: hidden;
 }
 
 

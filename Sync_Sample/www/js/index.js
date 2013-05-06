@@ -20,8 +20,7 @@
 
 var app = {
     config: {
-        content_json: "http://contentcontent.eu01.aws.af.cm/json",
-        content_json_local: "http://content.loc/json"
+        content_json: /*"http://contentcontent.eu01.aws.af.cm/json"*/ "http://content.loc/json"
     },
     path: '',
     filter: /^\/(.*)\//,
@@ -52,7 +51,7 @@ var app = {
             app.readFolder("ancestor-page");
         });
         app.readFolder("ancestor-page");
-        app.updateFileList(app.config.content_json_local);
+        app.updateFileList(app.config.content_json);
     },
     fail: function (evt) {
         console.log(evt.target.error.code);
@@ -181,14 +180,18 @@ var app = {
                         app.total_data.push(obj);
                     }
                 }
-                app.downloadItem((app.checkData(app.total_data)).toDownload);
-                $('.progress-status').empty().append("<p>Still " + app.jsonData.TotalSize + " bytes to go!</p>");
+                var analysedData=app.checkData(app.total_data);
+                app.downloadItem(analysedData.toDownload);
+                $('.progress-status').empty().append("<p>0 %</p>");
             }
             else {
                 $('.message').html("The content is updated!");
             }
         };
         reader.readAsText(file);
+    },
+    removeItem: function(data){
+
     },
     downloadItem: function (data) {
 
@@ -216,7 +219,7 @@ var app = {
                     entry.file(function (file) {
                         app.total_size -= file.size;
                         app.finished_size += file.size;
-                        $('.progress-status').empty().append("<p>Still " + app.total_size + " bytes to go!</p>");
+                        $('.progress-status').empty().append("<p>" + Math.round(app.finished_size / app.jsonData.TotalSize * 100) + " % </p>");
                     }, app.fail)
                     app.downloadItem(data);
                 }, function (error) {
@@ -279,7 +282,7 @@ var app = {
             app.storage.setItem("data_version", "999");
             app.total_data=[];
             app.total_data_string=[];
-            app.updateFileList(app.config.content_json_local);
+            app.updateFileList(app.config.content_json);
         })
     },
     showCurrentPath: function (currentPath) {

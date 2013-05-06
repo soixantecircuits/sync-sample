@@ -172,6 +172,7 @@ var app = {
                     var page = app.jsonData.CACHE[i];
                     for (var j = 0, len_page = page.data.length; j < len_page; j++) {
                         var obj={
+                            size: page.data[j].size,
                             url: page.data[j].url,
                             folderName: page.folder,
                             filePath: page.folder + page.data[j].url.split('/').pop()
@@ -180,7 +181,9 @@ var app = {
                         app.total_data.push(obj);
                     }
                 }
+                log("before analyse");
                 var analysedData=app.checkData(app.total_data);
+                log(analysedData);
                 app.downloadItem(analysedData.toDownload);
                 $('.progress-status').empty().append("<p>0 %</p>");
             }
@@ -191,7 +194,7 @@ var app = {
         reader.readAsText(file);
     },
     removeItem: function(data){
-
+        //TODO
     },
     downloadItem: function (data) {
 
@@ -209,7 +212,7 @@ var app = {
             fileTransfer = new FileTransfer();
             fileTransfer.onprogress = function (progressEvent) {
                 if (progressEvent.lengthComputable) {
-                    var percent = ((app.finished_size + progressEvent.loaded) / app.jsonData.TotalSize) * 500;
+                    var percent = ((app.finished_size + progressEvent.loaded) / app.total_size) * 500;
                     $(".progressbar-inner").width(percent);
                 }
             };
@@ -217,9 +220,9 @@ var app = {
                 url, filePath, function (entry) {
                     app.count_success++;
                     entry.file(function (file) {
-                        app.total_size -= file.size;
+//                        app.total_size -= file.size;
                         app.finished_size += file.size;
-                        $('.progress-status').empty().append("<p>" + Math.round(app.finished_size / app.jsonData.TotalSize * 100) + " % </p>");
+                        $('.progress-status').empty().append("<p>" + Math.round(app.finished_size / app.total_size * 100) + " % </p>");
                     }, app.fail)
                     app.downloadItem(data);
                 }, function (error) {
@@ -279,7 +282,8 @@ var app = {
 
         });
         $('.update_button').on('click', function () {
-            app.storage.setItem("data_version", "999");
+            log("begin sync");
+//            app.storage.setItem("data_version", "999");
             app.total_data=[];
             app.total_data_string=[];
             app.updateFileList(app.config.content_json);
@@ -311,12 +315,15 @@ var app = {
 //            log(old_data);
 //            log(data.length);
 //            log(old_data.length);
-            var toDelete=old_data,
+            var total_size= 0,
+                toDelete=old_data,
                 toDownload=[];
             for (var i = 0, len = data.length; i < len; i++) {
+
                 if (!app.checkItemInArray(old_data,data[i])){
 //                    log("add");
                     toDownload.push(data[i]);
+                    total_size+=data[i].size;
                 }
                 else{
                     toDelete= toDelete.filter(function (elt) {
@@ -325,6 +332,7 @@ var app = {
 //                    log("delete");
                 }
             }
+            app.total_size=total_size;
 //            log(toDownload);
 //            log(toDelete);
             result= {toDelete: toDelete, toDownload: toDownload};

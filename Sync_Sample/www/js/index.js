@@ -30,6 +30,7 @@ var app = {
     count_success: 0,
     total_file: 0,
     total_data: [],
+    total_data_string: [],
     jsonData: undefined,
     total_size: 0,
     finished_size: 0,
@@ -51,14 +52,12 @@ var app = {
             app.readFolder("ancestor-page");
         });
         app.readFolder("ancestor-page");
-        app.updateFileList(app.config.content_json);
+        app.updateFileList(app.config.content_json_local);
     },
     fail: function (evt) {
         console.log(evt.target.error.code);
     },
     cleanPage: function () {
-//        $(".medias").empty();
-//        $("#bl-work-items").empty();
         $('#bl-work-items').empty();
         $(".nav_buttons>li").remove();
         $(".backButton").remove();
@@ -155,7 +154,6 @@ var app = {
                 $('.nav_buttons > li').on('click', function (event) {
                     app.cleanPage();
                     app.readFolder($(this).data("path"));
-
                 });
             }, app.fail);
         }, app.fail)
@@ -166,19 +164,24 @@ var app = {
         reader.onloadend = function (evt) {
             app.jsonData = JSON.parse(evt.target.result);
             if (app.storage.getItem("data_version") != app.jsonData.version) {
+                $(".progressbar-inner").width(0);
+                app.finished_size=0;
                 app.storage.setItem("data_version", app.jsonData.version);
                 app.total_file = app.jsonData.CACHE.length;
                 app.total_size = app.jsonData.TotalSize;
                 for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
                     var page = app.jsonData.CACHE[i];
                     for (var j = 0, len_page = page.data.length; j < len_page; j++) {
-                        app.total_data.push({
+                        var obj={
                             url: page.data[j].url,
-                            folderName: page.folder
-                        });
+                            folderName: page.folder,
+                            filePath: page.folder + page.data[j].url.split('/').pop()
+                        };
+                        app.total_data_string.push(JSON.stringify(obj));
+                        app.total_data.push(obj);
                     }
                 }
-                app.downloadItem(app.total_data);
+                app.downloadItem((app.checkData(app.total_data)).toDownload);
                 $('.progress-status').empty().append("<p>Still " + app.jsonData.TotalSize + " bytes to go!</p>");
             }
             else {
@@ -188,6 +191,7 @@ var app = {
         reader.readAsText(file);
     },
     downloadItem: function (data) {
+
         var filePath = "",
             url = "",
             page = undefined,
@@ -198,7 +202,7 @@ var app = {
             var elt = data.pop();
             url = elt.url;
             var folderName = elt.folderName;
-            filePath = app.path + folderName + "/" + elt.url.split('/').pop();
+            filePath = app.path + elt.filePath;
             fileTransfer = new FileTransfer();
             fileTransfer.onprogress = function (progressEvent) {
                 if (progressEvent.lengthComputable) {
@@ -237,6 +241,7 @@ var app = {
                 jsonStringData = JSON.stringify(page);
                 writeContentJson(jsonStringData, folder);
             }
+            $('.message').html("New content available");
         }
     },
 
@@ -271,7 +276,10 @@ var app = {
 
         });
         $('.update_button').on('click', function () {
-            app.updateFileList(app.config.content_json);
+            app.storage.setItem("data_version", "999");
+            app.total_data=[];
+            app.total_data_string=[];
+            app.updateFileList(app.config.content_json_local);
         })
     },
     showCurrentPath: function (currentPath) {
@@ -286,6 +294,53 @@ var app = {
                 'left': ($("body").width() - $(".media-container>img").width()) / 2
             });
         });
+    },
+    checkData: function(data){
+     var old_data=[],
+         tmp1=JSON.parse(app.storage.getItem("data")),
+         result;
+        if (tmp1){
+            for (var i = 0, len = tmp1.data.length; i < len; i++) {
+                old_data.push(tmp1.data[i]);
+            }
+        }
+        if (old_data.length>0){
+//            log(old_data);
+//            log(data.length);
+//            log(old_data.length);
+            var toDelete=old_data,
+                toDownload=[];
+            for (var i = 0, len = data.length; i < len; i++) {
+                if (!app.checkItemInArray(old_data,data[i])){
+//                    log("add");
+                    toDownload.push(data[i]);
+                }
+                else{
+                    toDelete= toDelete.filter(function (elt) {
+                        return (elt.filePath!=data[i].filePath);
+                    });
+//                    log("delete");
+                }
+            }
+//            log(toDownload);
+//            log(toDelete);
+            result= {toDelete: toDelete, toDownload: toDownload};
+            app.storage.removeItem("data");
+        }
+        else{
+            result= {toDelete: [], toDownload: data};
+        }
+        var tmp={data: data};
+        app.storage.setItem("data", JSON.stringify(tmp));
+//        log(JSON.parse(app.storage.getItem("data")));
+//        log(result);
+        return result;
+    },
+    checkItemInArray: function(array, item){
+        var result=$.grep(array, function(elt){
+            return (elt.filePath==item.filePath);
+        });
+        return (result.length>0);
     }
 };
 

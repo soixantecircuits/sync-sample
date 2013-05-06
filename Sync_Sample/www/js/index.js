@@ -53,12 +53,6 @@ var app = {
         app.readFolder("ancestor-page");
         app.updateFileList(app.config.content_json);
     },
-    handleClick: function () {
-        $('.btn').on('click', function () {
-            app.cleanPage();
-            app.readFolder($(this).data("path"));
-        });
-    },
     fail: function (evt) {
         console.log(evt.target.error.code);
     },
@@ -69,7 +63,7 @@ var app = {
         $(".nav_buttons>li").remove();
         $(".backButton").remove();
     },
-    addBackButton: function (currentPath) {
+    addCurrentPathButtons: function (currentPath) {
         var path = currentPath.split("/");
         path.splice(-2, 2);
         $('#bl-work-items').append("<div class=\"btn\" data-panel=\"panel-1\">Show Content</div>");
@@ -85,7 +79,6 @@ var app = {
 
             // show panel for this work item
             $('#bl-panel-work-items').addClass('bl-panel-items-show');
-//            app.currentPanelIndex = $(this).data('panel');
             app.currentPanel = $('#bl-panel-work-items').find("[data-panel='" + $(this).data('panel') + "']");
             app.currentPanelIndex = app.currentPanel.index();
             app.currentPanel.addClass('bl-show-work');
@@ -105,7 +98,6 @@ var app = {
                     if (!$(event.target).is('div')) return false;
                     $(this).off('webkitTransitionEnd').removeClass('bl-hide-current-work');
                 });
-//                $('.bl-show-work').removeClass('bl-show-work');
                 $nextPanel.addClass('bl-show-work');
                 app.currentPanel = $nextPanel;
 
@@ -143,8 +135,7 @@ var app = {
                         if ($('#bl-panel-work-items').children('div').length == 1) {
                             $('.bl-next-work').hide();
                         }
-                        app.addBackButton(jsondata.folder);
-
+                        app.addCurrentPathButtons(jsondata.folder);
                     }
                 }, app.fail);
             }, app.fail);
@@ -155,24 +146,17 @@ var app = {
                 for (var i = 0; i < entries.length; i++) {
                     var entry = entries[i];
                     if (entry.isDirectory) {
-//                        var button = "<button class=\"btn\" data-path=\"" + folderName + "/"+ entry.name + "\">" + entry.name + "</button>";
-//                        $('.buttons').append(button);
                         var button = "<li class=\"btn btn-path\" data-panel=\"panel-" + countDirectory + "\" data-path=\"" + folderName + "/" + entry.name + "\">" + entry.name + "</li>"
                         $('.nav_buttons').append(button);
-//                        $('#bl-work-items').append(button);
                         countDirectory++;
                     }
                 }
                 app.showCurrentPath(folderName);
                 $('.nav_buttons > li').on('click', function (event) {
-
                     app.cleanPage();
                     app.readFolder($(this).data("path"));
 
                 });
-
-
-//                app.handleClick();
             }, app.fail);
         }, app.fail)
     },
@@ -302,7 +286,6 @@ var app = {
                 'left': ($("body").width() - $(".media-container>img").width()) / 2
             });
         });
-
     }
 };
 

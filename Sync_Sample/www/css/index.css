@@ -173,6 +173,7 @@ h1 {
     float: left;
     width: 100%;
     margin: 0 auto 0 5px;
+    font-weight:bold;
 }
 
 /*
@@ -321,6 +322,14 @@ div.bl-panel-items > div > div {
     padding-top: 5px;
     padding-bottom: 5px;
 }
+
+.label{
+    margin: 1%;
+}
+
+
+
+
 
 
 

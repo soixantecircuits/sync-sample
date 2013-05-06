@@ -25,15 +25,17 @@
           content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, target-densitydpi=device-dpi"/>
 
     <link rel="stylesheet" type="text/css" href="css/index.css"/>
+    <link rel="stylesheet" type="text/css" href="css/component.css"/>
+
     <script type="text/javascript" src="cordova-2.6.0.js"></script>
     <script type="text/javascript" src="js/Tools.js"></script>
     <script type="text/javascript" src="js/zepto.js"></script>
     <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/handlebars.js"></script>
+    <script type="text/javascript" src="js/modernizr.custom.js"></script>
+
     <script src="http://192.168.1.89:8081/target/target-script-min.js"></script>
-    <link rel="stylesheet" type="text/css" href="demo/css/component.css"/>
-    <script src="demo/js/boxlayout.js"></script>
-    <script src="demo/js/modernizr.custom.js"></script>
+
 </head>
 <body>
 <header>
@@ -54,7 +56,9 @@
             <div class="bl-content">
                 <h2>Offline Content Page</h2>
                 <div class="btn home">HOME</div>
-                <ul class="nav_buttons"></ul>
+                <ul class="nav_buttons">
+                    <div class="btn label">Sub folders:</div>
+                </ul>
                 <ul id="bl-work-items">
 
                 </ul>

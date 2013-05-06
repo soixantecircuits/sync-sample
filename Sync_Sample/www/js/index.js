@@ -164,14 +164,14 @@ var app = {
             app.jsonData = JSON.parse(evt.target.result);
             if (app.storage.getItem("data_version") != app.jsonData.version) {
                 $(".progressbar-inner").width(0);
-                app.finished_size=0;
+                app.finished_size = 0;
                 app.storage.setItem("data_version", app.jsonData.version);
                 app.total_file = app.jsonData.CACHE.length;
                 app.total_size = app.jsonData.TotalSize;
                 for (var i = 0, len_json = app.jsonData.CACHE.length; i < len_json; i++) {
                     var page = app.jsonData.CACHE[i];
                     for (var j = 0, len_page = page.data.length; j < len_page; j++) {
-                        var obj={
+                        var obj = {
                             size: page.data[j].size,
                             url: page.data[j].url,
                             folderName: page.folder,
@@ -182,7 +182,7 @@ var app = {
                     }
                 }
                 log("before analyse");
-                var analysedData=app.checkData(app.total_data);
+                var analysedData = app.checkData(app.total_data);
                 log(analysedData);
                 app.downloadItem(analysedData.toDownload);
                 $('.progress-status').empty().append("<p>0 %</p>");
@@ -193,7 +193,7 @@ var app = {
         };
         reader.readAsText(file);
     },
-    removeItem: function(data){
+    removeItem: function (data) {
         //TODO
     },
     downloadItem: function (data) {
@@ -284,8 +284,8 @@ var app = {
         $('.update_button').on('click', function () {
             log("begin sync");
 //            app.storage.setItem("data_version", "999");
-            app.total_data=[];
-            app.total_data_string=[];
+            app.total_data = [];
+            app.total_data_string = [];
             app.updateFileList(app.config.content_json);
         })
     },
@@ -302,56 +302,56 @@ var app = {
             });
         });
     },
-    checkData: function(data){
-     var old_data=[],
-         tmp1=JSON.parse(app.storage.getItem("data")),
-         result;
-        if (tmp1){
+    checkData: function (data) {
+        var old_data = [],
+            tmp1 = JSON.parse(app.storage.getItem("data")),
+            result;
+        if (tmp1) {
             for (var i = 0, len = tmp1.data.length; i < len; i++) {
                 old_data.push(tmp1.data[i]);
             }
         }
-        if (old_data.length>0){
+        if (old_data.length > 0) {
 //            log(old_data);
 //            log(data.length);
 //            log(old_data.length);
-            var total_size= 0,
-                toDelete=old_data,
-                toDownload=[];
+            var total_size = 0,
+                toDelete = old_data,
+                toDownload = [];
             for (var i = 0, len = data.length; i < len; i++) {
 
-                if (!app.checkItemInArray(old_data,data[i])){
+                if (!app.checkItemInArray(old_data, data[i])) {
 //                    log("add");
                     toDownload.push(data[i]);
-                    total_size+=data[i].size;
+                    total_size += data[i].size;
                 }
-                else{
-                    toDelete= toDelete.filter(function (elt) {
-                        return (elt.filePath!=data[i].filePath);
+                else {
+                    toDelete = toDelete.filter(function (elt) {
+                        return (elt.filePath != data[i].filePath);
                     });
 //                    log("delete");
                 }
             }
-            app.total_size=total_size;
+            app.total_size = total_size;
 //            log(toDownload);
 //            log(toDelete);
-            result= {toDelete: toDelete, toDownload: toDownload};
+            result = {toDelete: toDelete, toDownload: toDownload};
             app.storage.removeItem("data");
         }
-        else{
-            result= {toDelete: [], toDownload: data};
+        else {
+            result = {toDelete: [], toDownload: data};
         }
-        var tmp={data: data};
+        var tmp = {data: data};
         app.storage.setItem("data", JSON.stringify(tmp));
 //        log(JSON.parse(app.storage.getItem("data")));
 //        log(result);
         return result;
     },
-    checkItemInArray: function(array, item){
-        var result=$.grep(array, function(elt){
-            return (elt.filePath==item.filePath);
+    checkItemInArray: function (array, item) {
+        var result = $.grep(array, function (elt) {
+            return (elt.filePath == item.filePath);
         });
-        return (result.length>0);
+        return (result.length > 0);
     }
 };
 

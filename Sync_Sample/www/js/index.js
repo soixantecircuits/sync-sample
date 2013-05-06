@@ -132,7 +132,7 @@ var app = {
                         var context = pageContent.data;
                         $("#bl-panel-work-items").empty().append(template(context));
                         app.handleCenterMedia();
-                        if ($('#bl-panel-work-items').children('div').length == 1) {
+                        if ($('#bl-panel-work-items').children('div').length == 1) {//hide next work button when just one item
                             $('.bl-next-work').hide();
                         }
                         app.addCurrentPathButtons(jsondata.folder);

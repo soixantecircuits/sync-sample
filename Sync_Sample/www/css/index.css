@@ -281,15 +281,7 @@ div.bl-panel-items > div > div {
     text-align: center;
 }
 
-#bl-panel-work-items img{
-    min-width: 700px;
-    max-width: 90%;
-    width: auto;
-    height: 80%;
-    position: fixed;
-    top: 20px;
-}
-
+#bl-panel-work-items img,
 #bl-panel-work-items video{
     min-width: 700px;
     max-width: 90%;
@@ -325,6 +317,7 @@ div.bl-panel-items > div > div {
 
 .label{
     margin: 1%;
+    background: #c46251;
 }
 
 

@@ -20,7 +20,7 @@
 
 var app = {
     config: {
-        content_json: "http://contentcontent.eu01.aws.af.cm/json" /*"http://content.loc/json"*/
+        content_json: /*"http://contentcontent.eu01.aws.af.cm/json"*/ "http://content.loc/json"
     },
     media_template: undefined,
     path: '',
@@ -37,8 +37,11 @@ var app = {
     storage: window.localStorage,
     currentPanel: undefined,
     currentPanelIndex: 0,
+    currentPath: "",
     // Application Constructor
     initialize: function () {
+        $('.show-content').hide();
+        $(".backButton").hide();
         this.bindEvents();
     },
     bindEvents: function () {
@@ -46,7 +49,6 @@ var app = {
     },
     onDeviceReady: function () {
         console.log("Document is ready");
-
         var source = $("#media-template").html();
         app.media_template = Handlebars.compile(source);
 
@@ -62,50 +64,17 @@ var app = {
         console.log(evt.target.error.code);
     },
     cleanPage: function () {
-        $('#bl-work-items').empty();
+        $('.show-content').hide();
         $(".nav_buttons>li").remove();
-        $(".backButton").remove();
+        $(".backButton").hide();
     },
     addCurrentPathButtons: function (currentPath) {
-        var path = currentPath.split("/");
+        app.currentPath=currentPath;
+        var path=app.currentPath.split("/");
         path.splice(-2, 2);
-        $('#bl-work-items').append("<div class=\"btn show-content\" data-panel=\"panel-1\">Show Content</div>");
-        $('.bl-content').append("<div class=\"btn backButton\">BACK</div>");
-        $('.backButton').on('click', function () {
-            app.cleanPage();
-            app.readFolder(path.join("/"))
-            $(this).remove();
-        });
-        $(".show-content").on('click', function () {
-            // scale down main section
-            $('#bl-work-section').addClass('bl-scale-down');
+        $('.show-content').show();
+        $(".backButton").show();
 
-            // show panel for this work item
-            $('#bl-panel-work-items').addClass('bl-panel-items-show');
-            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='panel-1']");
-            app.currentPanelIndex = app.currentPanel.index();
-            app.currentPanel.addClass('bl-show-work');
-
-            $('.bl-icon-close').on('click', function () {
-                // scale up main section
-                $('#bl-work-section').removeClass('bl-scale-down');
-                $('#bl-panel-work-items').removeClass('bl-panel-items-show');
-                $('.bl-show-work').removeClass('bl-show-work');
-            });
-
-            // navigating the work items: current work panel scales down and the next work panel slides up
-            $('.bl-next-work').on('click', function () {
-                app.currentPanelIndex = app.currentPanelIndex < $('#bl-panel-work-items').children('div').length - 1 ? app.currentPanelIndex + 1 : 0;
-                var $nextPanel = $('#bl-panel-work-items').children('div').eq(app.currentPanelIndex);
-                app.currentPanel.removeClass('bl-show-work').addClass('bl-hide-current-work').on('webkitTransitionEnd', function (event) {
-                    if (!$(event.target).is('div')) return false;
-                    $(this).off('webkitTransitionEnd').removeClass('bl-hide-current-work');
-                });
-                $nextPanel.addClass('bl-show-work');
-                app.currentPanel = $nextPanel;
-
-            });
-        })
     },
     readFolder: function (folderName) {
         window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, function (fs) {
@@ -120,8 +89,8 @@ var app = {
                         var pageContent = {data: []};//Will add title, description, etc
                         for (var i = 0, len = jsondata.data.length; i < len; i++) {
                             var media = jsondata.data[i],
-                                isImage = (media.type == "image") ? true : false,
-                                isVideo = (media.type == "video") ? true : false;
+                                isImage = (media.type == "image"),
+                                isVideo = (media.type == "video");
                             pageContent.data.push({
                                 index: i + 1,
                                 name: media.name,
@@ -132,6 +101,7 @@ var app = {
                         }
                         var context = pageContent.data;
                         $("#bl-panel-work-items").empty().append(app.media_template(context));
+                        app.initShowNavEvent();
                         app.handleCenterMedia();
                         if ($('#bl-panel-work-items').children('div').length == 1) {//hide next work button when just one item
                             $('.bl-next-work').hide();
@@ -143,6 +113,7 @@ var app = {
             var directoryEntry = new DirectoryEntry(folderName, folderAbsolutePath);
             var directoryReader = directoryEntry.createReader();
             directoryReader.readEntries(function (entries) {
+                log(entries);
                 var countDirectory = 1;
                 for (var i = 0; i < entries.length; i++) {
                     var entry = entries[i];
@@ -286,12 +257,48 @@ var app = {
 
         });
         $('.update_button').on('click', function () {
-            log("begin sync");
 //            app.storage.setItem("data_version", "999");
             app.total_data = [];
             app.total_data_string = [];
             app.updateFileList(app.config.content_json);
-        })
+        });
+        $('.backButton').on('click', function () {
+            var path = app.currentPath.split("/");
+            path.splice(-2, 2);
+            app.cleanPage();
+            app.readFolder(path.join("/"));
+            $(this).hide();
+        });
+        $(".show-content").on('click', function () {
+            // scale down main section
+            $('#bl-work-section').addClass('bl-scale-down');
+
+            // show panel for this work item
+            $('#bl-panel-work-items').addClass('bl-panel-items-show');
+            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='panel-1']");
+            app.currentPanelIndex = app.currentPanel.index();
+            app.currentPanel.addClass('bl-show-work');
+        });
+    },
+    initShowNavEvent: function (){
+        $('.bl-icon-close').on('click', function () {
+            // scale up main section
+            $('#bl-work-section').removeClass('bl-scale-down');
+            $('#bl-panel-work-items').removeClass('bl-panel-items-show');
+            $('.bl-show-work').removeClass('bl-show-work');
+        });
+        // navigating the work items: current work panel scales down and the next work panel slides up
+        $('.bl-next-work').on('click', function () {
+            app.currentPanelIndex = app.currentPanelIndex < $('#bl-panel-work-items').children('div').length - 1 ? app.currentPanelIndex + 1 : 0;
+            var $nextPanel = $('#bl-panel-work-items').children('div').eq(app.currentPanelIndex);
+            app.currentPanel.removeClass('bl-show-work').addClass('bl-hide-current-work').on('webkitTransitionEnd', function (event) {
+                if (!$(event.target).is('div')) return false;
+                $(this).off('webkitTransitionEnd').removeClass('bl-hide-current-work');
+            });
+            $nextPanel.addClass('bl-show-work');
+            app.currentPanel = $nextPanel;
+
+        });
     },
     showCurrentPath: function (currentPath) {
         $('.current-path').html(currentPath);
@@ -316,16 +323,11 @@ var app = {
             }
         }
         if (old_data.length > 0) {
-//            log(old_data);
-//            log(data.length);
-//            log(old_data.length);
             var total_size = 0,
                 toDelete = old_data,
                 toDownload = [];
             for (var i = 0, len = data.length; i < len; i++) {
-
                 if (!app.checkItemInArray(old_data, data[i])) {
-//                    log("add");
                     toDownload.push(data[i]);
                     total_size += data[i].size;
                 }
@@ -333,12 +335,9 @@ var app = {
                     toDelete = toDelete.filter(function (elt) {
                         return (elt.filePath != data[i].filePath);
                     });
-//                    log("delete");
                 }
             }
             app.total_size = total_size;
-//            log(toDownload);
-//            log(toDelete);
             result = {toDelete: toDelete, toDownload: toDownload};
             app.storage.removeItem("data");
         }
@@ -347,8 +346,6 @@ var app = {
         }
         var tmp = {data: data};
         app.storage.setItem("data", JSON.stringify(tmp));
-//        log(JSON.parse(app.storage.getItem("data")));
-//        log(result);
         return result;
     },
     checkItemInArray: function (array, item) {

@@ -56,6 +56,7 @@
     </script>
 </head>
 <body>
+
 <header>
     <div class="last-message"><h1>Last message: <span class="message">Update status</span></h1></div>
     <div class="progressbar progressbar-green">
@@ -64,6 +65,7 @@
     <div class="progress-status"><p>100 %</div>
     <div class="current-path"></div>
 </header>
+
 <div class="line_separator"></div>
 <div class="container">
     <div id="bl-main" class="bl-main">
@@ -78,18 +80,15 @@
                     <div class="btn label">Sub folders:</div>
                 </ul>
                 <ul id="bl-work-items">
-
+                    <div class="btn show-content" data-panel="panel-1">Show Content</div>
                 </ul>
-
-                <!-- Panel items for the works -->
-                <div class="bl-panel-items" id="bl-panel-work-items">
-
-                </div>
+                <div class="btn backButton">BACK</div>
+                <!-- Media items -->
+                <div class="bl-panel-items" id="bl-panel-work-items"></div>
             </div>
         </section>
     </div>
 </div>
-
 
 <footer>
     <div class="line_separator"></div>
@@ -98,10 +97,12 @@
         <div ontouchstart="" class="update_button"><h2>Synchronisation</h2></div>
     </div>
 </footer>
+
 <script type="text/javascript">
     $(function () {
         app.initialize();
     });
 </script>
+
 </body>
 </html>

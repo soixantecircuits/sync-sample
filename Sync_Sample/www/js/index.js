@@ -20,7 +20,7 @@
 
 var app = {
     config: {
-        content_json: /*"http://contentcontent.eu01.aws.af.cm/json"*/ "http://content.loc/json"
+        content_json: "http://contentcontent.eu01.aws.af.cm/json" /*"http://content.loc/json"*/
     },
     path: '',
     filter: /^\/(.*)\//,

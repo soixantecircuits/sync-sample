@@ -22,6 +22,7 @@ var app = {
     config: {
         content_json: "http://contentcontent.eu01.aws.af.cm/json" /*"http://content.loc/json"*/
     },
+    media_template: undefined,
     path: '',
     filter: /^\/(.*)\//,
     eventFolder: "",
@@ -45,6 +46,10 @@ var app = {
     },
     onDeviceReady: function () {
         console.log("Document is ready");
+
+        var source = $("#media-template").html();
+        app.media_template = Handlebars.compile(source);
+
         app.initEvents();
         $(".home").on('click', function () {
             app.cleanPage();
@@ -64,20 +69,20 @@ var app = {
     addCurrentPathButtons: function (currentPath) {
         var path = currentPath.split("/");
         path.splice(-2, 2);
-        $('#bl-work-items').append("<div class=\"btn\" data-panel=\"panel-1\">Show Content</div>");
+        $('#bl-work-items').append("<div class=\"btn show-content\" data-panel=\"panel-1\">Show Content</div>");
         $('.bl-content').append("<div class=\"btn backButton\">BACK</div>");
         $('.backButton').on('click', function () {
             app.cleanPage();
             app.readFolder(path.join("/"))
             $(this).remove();
         });
-        $("#bl-work-items>div").on('click', function () {
+        $(".show-content").on('click', function () {
             // scale down main section
             $('#bl-work-section').addClass('bl-scale-down');
 
             // show panel for this work item
             $('#bl-panel-work-items').addClass('bl-panel-items-show');
-            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='" + $(this).data('panel') + "']");
+            app.currentPanel = $('#bl-panel-work-items').find("[data-panel='panel-1']");
             app.currentPanelIndex = app.currentPanel.index();
             app.currentPanel.addClass('bl-show-work');
 
@@ -125,10 +130,8 @@ var app = {
                                 isVideo: isVideo
                             })
                         }
-                        var source = $("#media-template").html();
-                        var template = Handlebars.compile(source);
                         var context = pageContent.data;
-                        $("#bl-panel-work-items").empty().append(template(context));
+                        $("#bl-panel-work-items").empty().append(app.media_template(context));
                         app.handleCenterMedia();
                         if ($('#bl-panel-work-items').children('div').length == 1) {//hide next work button when just one item
                             $('.bl-next-work').hide();
@@ -276,6 +279,7 @@ var app = {
     },
     initEvents: function () {
         $('.reload_button').on('click', function () {
+            $('.bl-icon-close').trigger("click");
             $('.message').html("Page refreshed");
             app.cleanPage();
             app.readFolder('ancestor-page');

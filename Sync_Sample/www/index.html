@@ -33,9 +33,27 @@
     <script type="text/javascript" src="js/index.js"></script>
     <script type="text/javascript" src="js/handlebars.js"></script>
     <script type="text/javascript" src="js/modernizr.custom.js"></script>
-
-    <!--<script src="http://192.168.1.89:8081/target/target-script-min.js"></script>-->
-
+    <script id="media-template" type="text/x-handlebars-template">
+        {{#each this}}
+        {{#if isImage}}
+        <div class="media-container" data-panel="panel-{{index}}">
+            <img class="img" src="{{path}}"/>
+        </div>
+        {{else}}
+        {{#if isVideo}}
+        <div class="media-container" data-panel="panel-{{index}}">
+            <video class="video" controls>
+                <source src="{{path}}">
+            </video>
+        </div>
+        {{/if}}
+        {{/if}}
+        {{/each}}
+        <nav>
+            <span class="bl-next-work">&gt; Next Media</span>
+            <span class="bl-icon bl-icon-close"></span>
+        </nav>
+    </script>
 </head>
 <body>
 <header>
@@ -62,29 +80,7 @@
                 <ul id="bl-work-items">
 
                 </ul>
-                <script id="media-template" type="text/x-handlebars-template">
-                    <!--<div class="medias">-->
-                        {{#each this}}
-                        {{#if isImage}}
-                        <div class="media-container" data-panel="panel-{{index}}">
-                        <img class="img" src="{{path}}"/>
-                        </div>
-                        {{else}}
-                        {{#if isVideo}}
-                        <div class="media-container" data-panel="panel-{{index}}">
-                        <video class="video" controls>
-                            <source src="{{path}}">
-                        </video>
-                        </div>
-                        {{/if}}
-                        {{/if}}
-                        {{/each}}
-                    <!--</div>-->
-                    <nav>
-                        <span class="bl-next-work">&gt; Next Media</span>
-                        <span class="bl-icon bl-icon-close"></span>
-                    </nav>
-                </script>
+
                 <!-- Panel items for the works -->
                 <div class="bl-panel-items" id="bl-panel-work-items">
 
